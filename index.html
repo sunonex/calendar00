@@ -84,6 +84,9 @@
       --footer-height-multiplier: 1.0;
       --today-float-offset: 0.45em;
       --side-column-width: 22.5%;
+      --cell-day-font-size: 2.0rem;
+      --sub-cell-day-font-size: 1.0rem;
+      --year-cell-day-font-size: 0.85rem;
     }
 
     [data-theme="dark"] {
@@ -299,16 +302,11 @@
       position: relative;
     }
 
+    /* 改善: 点滅が見えづらい問題を修正し、視認性の高いダイナミックブレスに変更 */
     @keyframes shadowBreathPulse {
-      0% { color: #0f1418; text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15); }
-      50% { color: #0f1418; text-shadow: 0 6px 16px rgba(15, 23, 42, 0.45); }
-      100% { color: #0f1418; text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15); }
-    }
-
-    [data-theme="dark"] @keyframes shadowBreathPulse {
-      0% { color: #edf2f6; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
-      50% { color: #edf2f6; text-shadow: 0 8px 24px rgba(255, 255, 255, 0.5); }
-      100% { color: #edf2f6; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+      0% { color: var(--text-main); text-shadow: 0 0 2px rgba(0, 204, 102, 0.2); opacity: 0.7; }
+      50% { color: var(--telemetry-accent); text-shadow: 0 0 12px rgba(0, 204, 102, 0.8), 0 0 24px rgba(0, 204, 102, 0.4); opacity: 1; }
+      100% { color: var(--text-main); text-shadow: 0 0 2px rgba(0, 204, 102, 0.2); opacity: 0.7; }
     }
 
     .telemetry-card {
@@ -328,12 +326,13 @@
 
     .telemetry-card.is-dimmed { opacity: 0.35; }
 
+    /* 改善: 拡大サイズを1.7倍程度に調整 (ホログラムポップアップ) */
     .hologram-popup-overlay {
       position: fixed !important;
       z-index: 99999 !important;
-      width: 440px !important;
-      height: 130px !important;
-      padding: 22px 28px !important;
+      width: 380px !important;
+      height: 110px !important;
+      padding: 18px 24px !important;
       background: var(--bg-window) !important;
       border: none !important;
       border-radius: 4px !important;
@@ -349,11 +348,11 @@
 
     @keyframes holoExpandDown {
       0% { transform: translate(var(--translate-x, -50%), -10px) scale(1.0); opacity: 0; }
-      100% { transform: translate(var(--translate-x, -50%), 20px) scale(2.0); opacity: 1; }
+      100% { transform: translate(var(--translate-x, -50%), 15px) scale(1.7); opacity: 1; }
     }
 
     .hologram-popup-overlay .gauge-header-right {
-      animation: shadowBreathPulse 3.0s infinite ease-in-out !important;
+      animation: shadowBreathPulse 1.8s infinite ease-in-out !important;
     }
 
     .telemetry-card::after {
@@ -513,7 +512,7 @@
     .main-calendar-matrix .cell-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .main-calendar-matrix .day-num-wrap { display: flex; align-items: center; gap: 4px; }
     
-    .main-calendar-matrix .day-num { font-size: 2.0rem; font-weight: 400; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .main-calendar-matrix .day-num { font-size: var(--cell-day-font-size); font-weight: 400; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
     .main-calendar-matrix .matrix-cell.is-past .day-num { color: var(--past-badge-text) !important; font-weight: 400; }
     .main-calendar-matrix .matrix-cell.is-past .cell-tag { opacity: 0.75; }
 
@@ -584,7 +583,7 @@
     .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
     .sub-calendar-matrix .matrix-cell { background: var(--bg-window); padding: 2px 4px; display: flex; align-items: flex-start; justify-content: flex-start; position: relative; min-height: 0; }
     .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
-    .sub-calendar-matrix .day-num { font-size: 1.0rem; font-weight: 400; line-height: 1; }
+    .sub-calendar-matrix .day-num { font-size: var(--sub-cell-day-font-size); font-weight: 400; line-height: 1; }
 
     .sub-calendar-matrix .matrix-cell.is-today,
     .year-month-window .matrix-cell.is-today { position: relative; z-index: 6; background: var(--bg-window) !important; }
@@ -612,7 +611,7 @@
     .year-month-window .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
     .year-month-window .matrix-cell { background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 4px; position: relative; min-height: 0; }
     .year-month-window .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.3; }
-    .year-month-window .day-num { font-size: 0.85rem; font-weight: 600; }
+    .year-month-window .day-num { font-size: var(--year-cell-day-font-size); font-weight: 600; }
 
     /* 5. BOTTOM TASKBAR */
     .screen-bottom-taskbar {
@@ -649,7 +648,6 @@
       background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff;
       width: 16px; height: 16px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    /* 修正: max-heightを広げ、スクロールと内部の余裕を持たせる */
     .os-win-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 560px; overflow-y: auto; }
     .os-win-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .os-win-row label { color: var(--text-sub); font-weight: 600; }
@@ -890,6 +888,29 @@
           <span id="cfg-val-side-width" style="font-weight:700; width:44px; text-align:right;">22.5%</span>
         </div>
       </div>
+
+      <!-- フォントサイズの設定 -->
+      <div class="os-win-row">
+        <label>MAIN_CELL_FONT_SIZE</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-day-font" min="1.0" max="3.5" step="0.1" value="2.0" style="flex:1;">
+          <span id="cfg-val-day-font" style="font-weight:700; width:44px; text-align:right;">2.0rem</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>SUB_CELL_FONT_SIZE</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-sub-font" min="0.6" max="2.0" step="0.1" value="1.0" style="flex:1;">
+          <span id="cfg-val-sub-font" style="font-weight:700; width:44px; text-align:right;">1.0rem</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>YEAR_CELL_FONT_SIZE</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-year-font" min="0.5" max="1.5" step="0.05" value="0.85" style="flex:1;">
+          <span id="cfg-val-year-font" style="font-weight:700; width:44px; text-align:right;">0.85rem</span>
+        </div>
+      </div>
       
       <!-- 2. 高さの設定（上から下へ） -->
       <div class="os-win-row">
@@ -962,7 +983,6 @@
         <button id="cfg-export-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">EXPORT JSON</button>
         <button id="cfg-import-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">IMPORT JSON</button>
       </div>
-      <!-- 修正: 完全に独立したブロックとして高さを確保 -->
       <textarea id="cfg-json-area" placeholder="JSON configuration stream..." style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:6px; font-family:inherit; font-size:0.72rem; width:100%; height:90px; resize:vertical; display:block; margin-top:4px;"></textarea>
       <button id="cfg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center; color:#ff7766;">RESET TO DEFAULT</button>
     </div>
@@ -1098,6 +1118,13 @@
       const cfgRangeSideWidth = document.getElementById('cfg-range-side-width');
       const cfgValSideWidth = document.getElementById('cfg-val-side-width');
       
+      const cfgRangeDayFont = document.getElementById('cfg-range-day-font');
+      const cfgValDayFont = document.getElementById('cfg-val-day-font');
+      const cfgRangeSubFont = document.getElementById('cfg-range-sub-font');
+      const cfgValSubFont = document.getElementById('cfg-val-sub-font');
+      const cfgRangeYearFont = document.getElementById('cfg-range-year-font');
+      const cfgValYearFont = document.getElementById('cfg-val-year-font');
+
       const cfgRangeHeader = document.getElementById('cfg-range-header');
       const cfgValHeader = document.getElementById('cfg-val-header');
       const cfgRangeTelemetry = document.getElementById('cfg-range-telemetry');
@@ -1137,6 +1164,21 @@
           cfgRangeSideWidth.value = config.sideWidth;
           cfgValSideWidth.textContent = config.sideWidth + '%';
           document.documentElement.style.setProperty('--side-column-width', config.sideWidth + '%');
+        }
+        if (config.dayFont !== undefined) {
+          cfgRangeDayFont.value = config.dayFont;
+          cfgValDayFont.textContent = Number(config.dayFont).toFixed(1) + 'rem';
+          document.documentElement.style.setProperty('--cell-day-font-size', config.dayFont + 'rem');
+        }
+        if (config.subFont !== undefined) {
+          cfgRangeSubFont.value = config.subFont;
+          cfgValSubFont.textContent = Number(config.subFont).toFixed(1) + 'rem';
+          document.documentElement.style.setProperty('--sub-cell-day-font-size', config.subFont + 'rem');
+        }
+        if (config.yearFont !== undefined) {
+          cfgRangeYearFont.value = config.yearFont;
+          cfgValYearFont.textContent = Number(config.yearFont).toFixed(2) + 'rem';
+          document.documentElement.style.setProperty('--year-cell-day-font-size', config.yearFont + 'rem');
         }
         if (config.headerScale !== undefined) {
           cfgRangeHeader.value = config.headerScale;
@@ -1178,6 +1220,9 @@
         widthVw: cfgRangeWidthVw.value,
         widthPx: cfgRangeWidthPx.value,
         sideWidth: cfgRangeSideWidth.value,
+        dayFont: cfgRangeDayFont.value,
+        subFont: cfgRangeSubFont.value,
+        yearFont: cfgRangeYearFont.value,
         headerScale: cfgRangeHeader.value,
         telemetryScale: cfgRangeTelemetry.value,
         ctrlScale: cfgRangeCtrl.value,
@@ -1190,6 +1235,9 @@
       cfgRangeWidthVw.addEventListener('input', () => applyConfigValues({ widthVw: cfgRangeWidthVw.value }));
       cfgRangeWidthPx.addEventListener('input', () => applyConfigValues({ widthPx: cfgRangeWidthPx.value }));
       cfgRangeSideWidth.addEventListener('input', () => applyConfigValues({ sideWidth: cfgRangeSideWidth.value }));
+      cfgRangeDayFont.addEventListener('input', () => applyConfigValues({ dayFont: cfgRangeDayFont.value }));
+      cfgRangeSubFont.addEventListener('input', () => applyConfigValues({ subFont: cfgRangeSubFont.value }));
+      cfgRangeYearFont.addEventListener('input', () => applyConfigValues({ yearFont: cfgRangeYearFont.value }));
       cfgRangeHeader.addEventListener('input', () => applyConfigValues({ headerScale: cfgRangeHeader.value }));
       cfgRangeTelemetry.addEventListener('input', () => applyConfigValues({ telemetryScale: cfgRangeTelemetry.value }));
       cfgRangeCtrl.addEventListener('input', () => applyConfigValues({ ctrlScale: cfgRangeCtrl.value }));
@@ -1266,7 +1314,7 @@
 
       cfgResetBtn.addEventListener('click', () => {
         const defaultConfig = { 
-          widthVw: '82', widthPx: '1400', sideWidth: '22.5',
+          widthVw: '82', widthPx: '1400', sideWidth: '22.5', dayFont: '2.0', subFont: '1.0', yearFont: '0.85',
           headerScale: '1.0', telemetryScale: '1.0', ctrlScale: '1.0', footerScale: '1.0', 
           shadowAlpha: '0.08', offset: '0.45' 
         };
@@ -2082,7 +2130,6 @@
             <div class="matrix-cell other-month">
               <div class="cell-header">
                 <div class="day-num-wrap"><span class="day-num">${String(day).padStart(2, '0')}</span></div>
-                ${isDetailed ? '<span class="cell-tag">NEXT</span>' : ''}
               </div>
             </div>
           `;
