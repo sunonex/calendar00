@@ -683,7 +683,6 @@
       border-radius: 2px;
     }
     
-    /* 休日・土曜日・日曜日の当日セルの場合、日付背景を赤っぽいソリッドカラーにする */
     .main-calendar-matrix .matrix-cell.is-today.is-holiday-today .day-num {
       background: var(--today-holiday-badge-bg) !important;
       color: #ffffff !important;
@@ -781,7 +780,6 @@
     .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
     .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
     
-    /* 祝日名の見切れ防止：コンパクト化とパディング確保 */
     .main-calendar-matrix .holiday-title {
       font-size: calc(0.7rem * var(--ui-scale)); 
       font-weight: 700; 
@@ -1136,7 +1134,6 @@
   <footer class="screen-bottom-taskbar">
     <div class="footer-left-status">
       <span id="api-status">API: CONNECTING...</span>
-      <!-- このコードが生成された時点の固定バージョンID -->
       <span id="build-version-tag" style="opacity: 0.8; font-weight: 600;">ver.20260817222833000</span>
     </div>
     <div class="footer-right-status">
@@ -1281,7 +1278,7 @@
       const cardWeek = document.getElementById('card-week');
       const cardMoon = document.getElementById('card-moon');
 
-      /* ホログラムポップアップ（多層ドロップシャドウの浮遊・下方展開）用JS */
+      /* ホログラムポップアップ用イベントリスナー */
       const cards = document.querySelectorAll('.telemetry-card');
       cards.forEach((card, index, list) => {
         let popup = null;
@@ -2083,7 +2080,7 @@
           const cellDate = new Date(year, month, day);
           const isPast = isCurrentYearMonth && cellDate < todayDateOnly;
           const dayOfWeek = cellDate.getDay();
-          const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); // 土曜・日曜
+          const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
           let moonEvent = phaseMap.get(dateKey);
 
           const classNames = ['matrix-cell'];
