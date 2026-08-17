@@ -44,6 +44,7 @@
       --holiday-text: #b33900;
       --today-badge-bg: #161e24;
       --today-badge-text: #ffffff;
+      --today-holiday-badge-bg: #b33900;
       
       --past-badge-text: #7c8d9c;
 
@@ -75,25 +76,21 @@
 
       --ui-scale: 0.52;
       --viewport-max-width: 1400px;
-      --today-icon-size: calc(22px * var(--ui-scale));
     }
 
     [data-size="fhd"] {
       --ui-scale: 0.52;
       --viewport-max-width: 1400px;
-      --today-icon-size: calc(22px * var(--ui-scale));
     }
 
     [data-size="wqhd"] {
       --ui-scale: 0.68;
       --viewport-max-width: 1860px;
-      --today-icon-size: calc(24px * var(--ui-scale));
     }
 
     [data-size="4k"] {
       --ui-scale: 1.0;
       --viewport-max-width: 2700px;
-      --today-icon-size: 26px;
     }
 
     [data-theme="dark"] {
@@ -123,6 +120,7 @@
       --holiday-text: #ff8c3b;
       --today-badge-bg: #edf2f6;
       --today-badge-text: #06090d;
+      --today-holiday-badge-bg: #b33900;
 
       --past-badge-text: #617382;
 
@@ -295,7 +293,7 @@
       border-radius: 1px;
     }
 
-    /* 2. TELEMETRY PANEL */
+    /* 2. TELEMETRY PANEL & ホログラフィック下方200%拡大オーバーレイ（多層ドロップシャドウ） */
     .chrono-telemetry-panel {
       width: 82vw;
       max-width: var(--viewport-max-width);
@@ -304,7 +302,40 @@
       grid-template-columns: repeat(5, 1fr);
       gap: calc(16px * var(--ui-scale));
       flex-shrink: 0;
+      position: relative;
     }
+
+    /* メタ情報カードのテキスト点滅：3秒周期でドロップシャドウ（影）の広がりが呼吸するように変化するアニメーション */
+    @keyframes shadowBreathPulse {
+      0% {
+        color: #0f1418;
+        text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+      }
+      50% {
+        color: #0f1418;
+        text-shadow: 0 6px 16px rgba(15, 23, 42, 0.45);
+      }
+      100% {
+        color: #0f1418;
+        text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+      }
+    }
+
+    [data-theme="dark"] @keyframes shadowBreathPulse {
+      0% {
+        color: #edf2f6;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+      50% {
+        color: #edf2f6;
+        text-shadow: 0 8px 24px rgba(255, 255, 255, 0.5);
+      }
+      100% {
+        color: #edf2f6;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      }
+    }
+
     .telemetry-card {
       background: var(--telemetry-bg);
       border: 1px solid var(--telemetry-border);
@@ -316,7 +347,49 @@
       position: relative;
       overflow: hidden;
       clip-path: polygon(calc(8px * var(--ui-scale)) 0, 100% 0, 100% calc(100% - calc(8px * var(--ui-scale))), calc(100% - calc(8px * var(--ui-scale))) 100%, 0 100%, 0 calc(8px * var(--ui-scale)));
+      transition: opacity 0.3s;
+      cursor: pointer;
     }
+
+    .telemetry-card.is-dimmed {
+      opacity: 0.35;
+    }
+
+    .hologram-popup-overlay {
+      position: fixed !important;
+      z-index: 99999 !important;
+      width: 440px !important;
+      height: 130px !important;
+      padding: 22px 28px !important;
+      background: var(--bg-window) !important;
+      border: none !important;
+      border-radius: 4px !important;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.28), 0 48px 96px -8px rgba(15, 23, 42, 0.38) !important;
+      pointer-events: none;
+      transform-origin: 50% 0%;
+      animation: holoExpandDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    [data-theme="dark"] .hologram-popup-overlay {
+      box-shadow: 0 24px 54px rgba(0, 0, 0, 0.85), 0 48px 96px rgba(0, 0, 0, 0.95) !important;
+    }
+
+    @keyframes holoExpandDown {
+      0% {
+        transform: translate(var(--translate-x, -50%), -10px) scale(1.0);
+        opacity: 0;
+      }
+      100% {
+        transform: translate(var(--translate-x, -50%), 20px) scale(2.0);
+        opacity: 1;
+      }
+    }
+
+    /* 3秒周期のゆったりとしたドロップシャドウの拡大・縮小点滅（黒一色・白文字） */
+    .hologram-popup-overlay .gauge-header-right {
+      animation: shadowBreathPulse 3.0s infinite ease-in-out !important;
+    }
+
     .telemetry-card::after {
       content: '';
       position: absolute;
@@ -381,6 +454,7 @@
       margin-left: auto;
       white-space: nowrap;
       flex-shrink: 0;
+      transition: color 0.4s, text-shadow 0.4s, opacity 0.4s;
     }
     .gauge-value-main {
       font-size: calc(1.65rem * var(--ui-scale)); 
@@ -610,6 +684,13 @@
       font-weight: 700;
       border-radius: 2px;
     }
+    
+    /* 休日・土曜日・日曜日の当日セルの場合、日付背景を赤っぽいソリッドカラーにする */
+    .main-calendar-matrix .matrix-cell.is-today.is-holiday-today .day-num {
+      background: var(--today-holiday-badge-bg) !important;
+      color: #ffffff !important;
+    }
+
     .main-calendar-matrix .matrix-cell.is-today .cell-tag {
       color: var(--text-main);
       font-weight: 700;
@@ -701,9 +782,21 @@
 
     .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
     .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
+    
+    /* 祝日名の見切れ防止：コンパクト化とパディング確保 */
     .main-calendar-matrix .holiday-title {
-      font-size: calc(0.88rem * var(--ui-scale)); font-weight: 700; color: var(--holiday-text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: calc(0.7rem * var(--ui-scale)); 
+      font-weight: 700; 
+      color: var(--holiday-text);
+      line-height: 1.15;
+      word-break: break-all;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      margin-top: 1px;
+      margin-bottom: calc(16px * var(--ui-scale));
+      z-index: 4;
     }
 
     /* サブカレンダー */
@@ -1185,6 +1278,39 @@
       const cardYear = document.getElementById('card-year');
       const cardWeek = document.getElementById('card-week');
       const cardMoon = document.getElementById('card-moon');
+
+      /* ホログラムポップアップ（多層ドロップシャドウの浮遊・下方展開）用JS */
+      const cards = document.querySelectorAll('.telemetry-card');
+      cards.forEach((card, index, list) => {
+        let popup = null;
+        card.addEventListener('mouseenter', () => {
+          if (popup) return;
+          card.classList.add('is-dimmed');
+          const rect = card.getBoundingClientRect();
+          popup = card.cloneNode(true);
+          popup.classList.remove('is-dimmed');
+          popup.classList.add('hologram-popup-overlay');
+          
+          let translateX = '-50%';
+          if (index === 0) {
+            translateX = '-10%';
+          } else if (index === list.length - 1) {
+            translateX = '-90%';
+          }
+          popup.style.setProperty('--translate-x', translateX);
+
+          popup.style.left = `${rect.left + rect.width / 2}px`;
+          popup.style.top = `${rect.bottom}px`;
+          document.body.appendChild(popup);
+        });
+        card.addEventListener('mouseleave', () => {
+          card.classList.remove('is-dimmed');
+          if (popup) {
+            popup.remove();
+            popup = null;
+          }
+        });
+      });
 
       const dateInput = document.getElementById('dbg-date-input');
       const rangeTime = document.getElementById('dbg-range-time');
@@ -1736,7 +1862,9 @@
         updateTelemetryMetrics(now);
 
         const dateKey = `${yyyy}-${mm}-${dd}`;
-        let isHoliday = (holidaysCache && holidaysCache[dateKey]) || now.getDay() === 0 || now.getDay() === 6;
+        const dayOfWeek = now.getDay();
+        const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+        let isHoliday = (holidaysCache && holidaysCache[dateKey]) || isWeekend;
         
         const holidayDate = document.getElementById('dbg-holiday-date');
         if (debugModeActive && holidayDate && holidayDate.value) {
@@ -1952,11 +2080,18 @@
           const isToday = isCurrentYearMonth && activeToday.getDate() === day;
           const cellDate = new Date(year, month, day);
           const isPast = isCurrentYearMonth && cellDate < todayDateOnly;
+          const dayOfWeek = cellDate.getDay();
+          const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); // 土曜・日曜
           let moonEvent = phaseMap.get(dateKey);
 
           const classNames = ['matrix-cell'];
           if (holidayName) classNames.push('is-holiday');
-          if (isToday) classNames.push('is-today');
+          if (isToday) {
+            classNames.push('is-today');
+            if (holidayName || isWeekend) {
+              classNames.push('is-holiday-today');
+            }
+          }
           if (isPast) classNames.push('is-past');
 
           let cellTagLabel = 'ACT';
@@ -1965,7 +2100,7 @@
           if (isToday) {
             const moonIllum = getMoonIllumination(getMoonAge(activeToday));
             cellTagContent = `
-              <span style="width:var(--today-icon-size); height:var(--today-icon-size); display:inline-block; vertical-align:middle;">${buildMoonSvgHtml(moonIllum)}</span>
+              <span style="width:20px; height:20px; display:inline-block; vertical-align:middle;">${buildMoonSvgHtml(moonIllum)}</span>
             `;
           } else if (isPast) {
             cellTagLabel = 'LOG';
