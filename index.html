@@ -21,11 +21,12 @@
       --bg-window: #ffffff;
       --window-border: rgba(15, 23, 42, 0.08);
 
-      /* Apple風 多層アンビエントシャドウ */
+      /* Apple風 多層アンビエントシャドウ（パラメータ制御可能） */
+      --shadow-alpha: 0.08;
       --window-shadow: 
-        0 1px 3px rgba(15, 23, 42, 0.04),
-        0 8px 16px -4px rgba(15, 23, 42, 0.06),
-        0 24px 38px -8px rgba(15, 23, 42, 0.08);
+        0 1px 3px rgba(15, 23, 42, calc(var(--shadow-alpha) * 0.5)),
+        0 8px 16px -4px rgba(15, 23, 42, var(--shadow-alpha)),
+        0 24px 38px -8px rgba(15, 23, 42, calc(var(--shadow-alpha) * 1.25));
 
       --bar-header: #1a222a;
       --bar-header-text: #f0f4f8;
@@ -74,23 +75,15 @@
 
       --today-cell-border: rgba(15, 23, 42, 0.16);
 
-      --ui-scale: 0.52;
+      /* 動的レイアウト・サイズ制御用変数 */
+      --viewport-width-vw: 82vw;
       --viewport-max-width: 1400px;
-    }
-
-    [data-size="fhd"] {
-      --ui-scale: 0.52;
-      --viewport-max-width: 1400px;
-    }
-
-    [data-size="wqhd"] {
-      --ui-scale: 0.68;
-      --viewport-max-width: 1860px;
-    }
-
-    [data-size="4k"] {
-      --ui-scale: 1.0;
-      --viewport-max-width: 2700px;
+      --header-height-multiplier: 1.0;
+      --telemetry-height-multiplier: 1.0;
+      --control-bar-height-multiplier: 1.0;
+      --footer-height-multiplier: 1.0;
+      --today-float-offset: 0.45em;
+      --side-column-width: 22.5%;
     }
 
     [data-theme="dark"] {
@@ -99,11 +92,11 @@
       --bg-window: #10161d;
       --window-border: rgba(255, 255, 255, 0.08);
       --window-shadow: 
-        0 1px 3px rgba(0, 0, 0, 0.5),
-        0 10px 24px -4px rgba(0, 0, 0, 0.65),
-        0 28px 48px -8px rgba(0, 0, 0, 0.75);
+        0 1px 3px rgba(0, 0, 0, calc(var(--shadow-alpha) * 3.5)),
+        0 10px 24px -4px rgba(0, 0, 0, calc(var(--shadow-alpha) * 4.5)),
+        0 28px 48px -8px rgba(0, 0, 0, calc(var(--shadow-alpha) * 5.5));
 
-      --bar-header: #080c10;
+      --bar-header: #141c24;
       --bar-header-text: #edf2f6;
       --bar-footer: #121820;
       --bar-footer-text: #a8bcca;
@@ -111,7 +104,7 @@
       --border-light: #1b242e;
       --th-bg: #182028;
       --th-text: #ccd6dd;
-      --th-weekend-bg: #080c10;
+      --th-weekend-bg: #0f161c;
       --th-weekend-text: #ff7766;
       --text-main: #edf2f6;
       --text-sub: #90a3b2;
@@ -165,6 +158,7 @@
       background-size: 20px 20px;
       color: var(--text-main);
       font-family: 'JetBrains Mono', monospace, sans-serif;
+      font-size: 14px;
       display: flex;
       flex-direction: column;
       transition: background-color 0.15s, color 0.15s;
@@ -190,58 +184,58 @@
     /* 1. TOP TASKBAR */
     .screen-top-taskbar {
       width: 100%;
-      height: calc(52px * var(--ui-scale));
-      min-height: 28px;
+      height: calc(52px * var(--header-height-multiplier));
+      min-height: 32px;
       background: var(--bar-header);
       color: var(--bar-header-text);
       clip-path: polygon(
         0 0, 
         100% 0, 
         100% 100%, 
-        calc(100% - calc(260px * var(--ui-scale))) 100%, 
-        calc(100% - calc(284px * var(--ui-scale))) calc(26px * var(--ui-scale)), 
-        0 calc(26px * var(--ui-scale))
+        calc(100% - 260px) 100%, 
+        calc(100% - 284px) calc(26px * var(--header-height-multiplier)), 
+        0 calc(26px * var(--header-height-multiplier))
       );
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: calc(14px * var(--ui-scale));
+      margin-bottom: 12px;
       border-bottom: 1px solid var(--window-border);
       flex-shrink: 0;
     }
     .taskbar-left {
-      height: calc(26px * var(--ui-scale));
+      height: calc(26px * var(--header-height-multiplier));
       min-height: 20px;
       flex: 1;
       display: flex;
       align-items: center;
-      padding: 0 calc(20px * var(--ui-scale));
-      font-size: calc(0.95rem * var(--ui-scale));
+      padding: 0 20px;
+      font-size: 0.95rem;
       font-weight: 700;
       letter-spacing: 0.5px;
-      gap: calc(14px * var(--ui-scale));
+      gap: 14px;
     }
     .status-indicator {
       display: inline-block;
-      width: calc(9px * var(--ui-scale));
-      height: calc(9px * var(--ui-scale));
+      width: 9px;
+      height: 9px;
       background: #00cc66;
       margin-right: 2px;
-      box-shadow: 0 0 calc(6px * var(--ui-scale)) #00cc66;
+      box-shadow: 0 0 6px #00cc66;
       flex-shrink: 0;
     }
     .header-ctrl-group {
       display: inline-flex;
       align-items: center;
-      gap: calc(8px * var(--ui-scale));
+      gap: 8px;
     }
     .header-btn {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.18);
       color: #cbd5e1;
-      padding: calc(3px * var(--ui-scale)) calc(10px * var(--ui-scale));
+      padding: 3px 10px;
       font-family: inherit;
-      font-size: calc(0.82rem * var(--ui-scale));
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       line-height: 1.1;
@@ -254,26 +248,26 @@
     }
 
     .taskbar-clock-section {
-      width: calc(260px * var(--ui-scale));
-      height: calc(52px * var(--ui-scale));
+      width: 260px;
+      height: calc(52px * var(--header-height-multiplier));
       min-height: 28px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-end;
-      padding-right: calc(18px * var(--ui-scale));
+      padding-right: 18px;
     }
     .clock-label {
-      font-size: calc(0.58rem * var(--ui-scale));
+      font-size: 0.58rem;
       color: var(--accent-gray);
       font-weight: 500;
       letter-spacing: 1px;
       line-height: 1;
-      margin-bottom: calc(2px * var(--ui-scale));
+      margin-bottom: 2px;
       opacity: 0.7;
     }
     .clock-display {
-      font-size: calc(1.05rem * var(--ui-scale));
+      font-size: 1.05rem;
       font-weight: 600;
       letter-spacing: 0.8px;
       color: #ffffff;
@@ -281,78 +275,58 @@
       font-variant-numeric: tabular-nums;
       display: flex;
       align-items: baseline;
-      gap: calc(6px * var(--ui-scale));
+      gap: 6px;
     }
     .clock-day-tag {
-      font-size: calc(0.72rem * var(--ui-scale));
+      font-size: 0.72rem;
       font-weight: 700;
       color: #00ff88;
       background: rgba(0, 204, 102, 0.15);
       border: 1px solid rgba(0, 204, 102, 0.35);
-      padding: calc(1px * var(--ui-scale)) calc(5px * var(--ui-scale));
+      padding: 1px 5px;
       border-radius: 1px;
     }
 
     /* 2. TELEMETRY PANEL */
     .chrono-telemetry-panel {
-      width: 82vw;
+      width: var(--viewport-width-vw);
       max-width: var(--viewport-max-width);
-      margin: 0 auto calc(16px * var(--ui-scale)) auto;
+      margin: 0 auto 14px auto;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: calc(16px * var(--ui-scale));
+      gap: 16px;
       flex-shrink: 0;
       position: relative;
     }
 
     @keyframes shadowBreathPulse {
-      0% {
-        color: #0f1418;
-        text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
-      }
-      50% {
-        color: #0f1418;
-        text-shadow: 0 6px 16px rgba(15, 23, 42, 0.45);
-      }
-      100% {
-        color: #0f1418;
-        text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
-      }
+      0% { color: #0f1418; text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15); }
+      50% { color: #0f1418; text-shadow: 0 6px 16px rgba(15, 23, 42, 0.45); }
+      100% { color: #0f1418; text-shadow: 0 2px 4px rgba(15, 23, 42, 0.15); }
     }
 
     [data-theme="dark"] @keyframes shadowBreathPulse {
-      0% {
-        color: #edf2f6;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-      }
-      50% {
-        color: #edf2f6;
-        text-shadow: 0 8px 24px rgba(255, 255, 255, 0.5);
-      }
-      100% {
-        color: #edf2f6;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-      }
+      0% { color: #edf2f6; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+      50% { color: #edf2f6; text-shadow: 0 8px 24px rgba(255, 255, 255, 0.5); }
+      100% { color: #edf2f6; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
     }
 
     .telemetry-card {
       background: var(--telemetry-bg);
       border: 1px solid var(--telemetry-border);
       box-shadow: var(--window-shadow);
-      padding: calc(12px * var(--ui-scale)) calc(16px * var(--ui-scale));
+      padding: calc(12px * var(--telemetry-height-multiplier)) 16px;
       display: flex;
       align-items: center;
-      gap: calc(14px * var(--ui-scale));
+      gap: 14px;
       position: relative;
       overflow: hidden;
-      clip-path: polygon(calc(8px * var(--ui-scale)) 0, 100% 0, 100% calc(100% - calc(8px * var(--ui-scale))), calc(100% - calc(8px * var(--ui-scale))) 100%, 0 100%, 0 calc(8px * var(--ui-scale)));
+      clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
       transition: opacity 0.3s;
       cursor: pointer;
     }
 
-    .telemetry-card.is-dimmed {
-      opacity: 0.35;
-    }
+    .telemetry-card.is-dimmed { opacity: 0.35; }
 
     .hologram-popup-overlay {
       position: fixed !important;
@@ -374,14 +348,8 @@
     }
 
     @keyframes holoExpandDown {
-      0% {
-        transform: translate(var(--translate-x, -50%), -10px) scale(1.0);
-        opacity: 0;
-      }
-      100% {
-        transform: translate(var(--translate-x, -50%), 20px) scale(2.0);
-        opacity: 1;
-      }
+      0% { transform: translate(var(--translate-x, -50%), -10px) scale(1.0); opacity: 0; }
+      100% { transform: translate(var(--translate-x, -50%), 20px) scale(2.0); opacity: 1; }
     }
 
     .hologram-popup-overlay .gauge-header-right {
@@ -399,147 +367,90 @@
       transition: width 0.3s ease;
     }
     .telemetry-card::before {
-      content: ''; position: absolute; top: 0; left: 0; width: calc(26px * var(--ui-scale)); height: calc(3.5px * var(--ui-scale));
+      content: ''; position: absolute; top: 0; left: 0; width: 26px; height: 3.5px;
       background: var(--telemetry-accent);
       z-index: 3;
     }
-    .telemetry-card > * {
-      position: relative;
-      z-index: 2;
-    }
+    .telemetry-card > * { position: relative; z-index: 2; }
 
-    .gauge-svg-container {
-      width: calc(68px * var(--ui-scale));
-      height: calc(68px * var(--ui-scale));
-      flex-shrink: 0;
-    }
-    .gauge-svg {
-      width: 100%; height: 100%; transform: rotate(-90deg);
-    }
-    .gauge-bg-circle {
-      fill: none; stroke: var(--gauge-track); stroke-width: 3;
-    }
-    .gauge-fill-circle {
-      fill: none; stroke: var(--gauge-fill); stroke-width: 3.2;
-      stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100;
-    }
-    .gauge-info { 
-      flex: 1; 
-      display: flex; 
-      flex-direction: column; 
-      overflow: hidden;
-      min-width: 0;
-    }
+    .gauge-svg-container { width: 54px; height: 54px; flex-shrink: 0; }
+    .gauge-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .gauge-bg-circle { fill: none; stroke: var(--gauge-track); stroke-width: 3; }
+    .gauge-fill-circle { fill: none; stroke: var(--gauge-fill); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+    .gauge-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
     .gauge-header {
-      display: flex; 
-      justify-content: space-between; 
-      align-items: baseline;
-      font-size: calc(0.88rem * var(--ui-scale)); 
-      font-weight: 700; 
-      color: var(--accent-gray); 
-      margin-bottom: calc(2px * var(--ui-scale));
-      gap: 4px;
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 0.78rem; font-weight: 700; color: var(--accent-gray); margin-bottom: 2px; gap: 4px;
     }
-    .gauge-header > span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .gauge-header > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .gauge-header-right {
-      font-size: calc(0.84rem * var(--ui-scale));
-      font-weight: 600;
-      color: var(--accent-gray);
-      margin-left: auto;
-      white-space: nowrap;
-      flex-shrink: 0;
+      font-size: 0.76rem; font-weight: 600; color: var(--accent-gray);
+      margin-left: auto; white-space: nowrap; flex-shrink: 0;
       transition: color 0.4s, text-shadow 0.4s, opacity 0.4s;
     }
-    .gauge-value-main {
-      font-size: calc(1.65rem * var(--ui-scale)); 
-      font-weight: 700; 
-      line-height: 1.15; 
-      color: var(--text-main);
-      white-space: nowrap;
-    }
-    .gauge-sub-label {
-      font-size: calc(0.8rem * var(--ui-scale)); 
-      color: var(--text-sub); 
-      font-weight: 500; 
-      margin-top: calc(3px * var(--ui-scale));
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .week-fraction-main { 
-      font-size: calc(1.65rem * var(--ui-scale)); 
-      font-weight: 700; 
-      color: var(--text-main); 
-    }
+    .gauge-value-main { font-size: 1.4rem; font-weight: 700; line-height: 1.15; color: var(--text-main); white-space: nowrap; }
+    .gauge-sub-label { font-size: 0.72rem; color: var(--text-sub); font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .week-fraction-main { font-size: 1.4rem; font-weight: 700; color: var(--text-main); }
 
     /* 3. CONTROL BAR */
     .screen-control-bar {
-      width: 82vw;
+      width: var(--viewport-width-vw);
       max-width: var(--viewport-max-width);
-      margin: 0 auto calc(16px * var(--ui-scale)) auto;
+      margin: 0 auto 14px auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: var(--bg-window);
       border: 1px solid var(--window-border);
       box-shadow: var(--window-shadow);
-      padding: calc(12px * var(--ui-scale)) calc(22px * var(--ui-scale));
+      padding: calc(12px * var(--control-bar-height-multiplier)) 22px;
       transition: background 0.15s ease;
       flex-shrink: 0;
     }
     .screen-control-bar.is-past { background: var(--control-bar-past); }
     .screen-control-bar.is-future { background: var(--control-bar-future); }
 
-    .target-date-group { display: flex; align-items: center; gap: calc(16px * var(--ui-scale)); }
-    .target-date { font-size: calc(1.85rem * var(--ui-scale)); font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
+    .target-date-group { display: flex; align-items: center; gap: 16px; }
+    .target-date { font-size: 1.6rem; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
     .mode-switch-btn {
       background: transparent;
       border: 1px solid var(--window-border);
       color: var(--text-sub);
       font-family: inherit;
-      font-size: calc(0.95rem * var(--ui-scale));
+      font-size: 0.9rem;
       font-weight: 700;
-      padding: calc(5px * var(--ui-scale)) calc(12px * var(--ui-scale));
+      padding: 5px 12px;
       cursor: pointer;
       letter-spacing: 0.5px;
       display: inline-flex;
       align-items: center;
-      gap: calc(8px * var(--ui-scale));
+      gap: 8px;
     }
     .mode-switch-btn:hover { background: var(--bar-header); color: #ffffff; }
-    .mode-switch-btn .mode-tag { color: #00cc66; font-size: calc(0.88rem * var(--ui-scale)); }
+    .mode-switch-btn .mode-tag { color: #00cc66; font-size: 0.82rem; }
     
-    .nav-actions { display: flex; gap: calc(10px * var(--ui-scale)); align-items: center; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; }
     .tac-btn {
       background: var(--bg-window);
       border: 1px solid var(--window-border);
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      padding: calc(7px * var(--ui-scale)) calc(16px * var(--ui-scale));
-      font-family: inherit; font-size: calc(0.95rem * var(--ui-scale)); font-weight: 700;
+      padding: 7px 16px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 700;
       cursor: pointer; color: var(--text-main);
     }
     .tac-btn:hover { background: var(--bar-header); color: #ffffff; }
 
     /* 4. TACTICAL VIEWPORT */
     .tactical-viewport {
-      width: 82vw;
+      width: var(--viewport-width-vw);
       max-width: var(--viewport-max-width);
-      margin: 0 auto calc(42px * var(--ui-scale)) auto;
+      margin: 0 auto 32px auto;
       flex: 1;
       min-height: 0;
       display: flex;
     }
     
-    #view-container {
-      width: 100%;
-      height: 100%;
-      min-height: 0;
-      display: flex;
-    }
+    #view-container { width: 100%; height: 100%; min-height: 0; display: flex; }
 
     .tac-window {
       background: var(--bg-window);
@@ -553,440 +464,195 @@
       background: var(--bar-header);
       color: var(--bar-header-text);
       border-bottom: 1px solid var(--window-border);
-      padding: calc(9px * var(--ui-scale)) calc(14px * var(--ui-scale));
+      padding: 9px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: calc(0.95rem * var(--ui-scale));
+      font-size: 0.9rem;
       font-weight: 700;
       letter-spacing: 0.4px;
       flex-shrink: 0;
     }
-    .tac-win-btn {
-      width: calc(12px * var(--ui-scale)); height: calc(12px * var(--ui-scale)); border: 1px solid rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.15); display: inline-block;
-    }
+    .tac-win-btn { width: 12px; height: 12px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.15); display: inline-block; }
 
     /* 月表示 */
-    .month-multi-windows { 
-      display: flex; 
-      gap: calc(18px * var(--ui-scale)); 
-      width: 100%; 
-      height: 100%;
-      min-height: 0;
-      align-items: stretch; 
-    }
+    .month-multi-windows { display: flex; gap: 18px; width: 100%; height: 100%; min-height: 0; align-items: stretch; }
     .side-windows-column { 
-      width: 22.5%; 
-      min-width: calc(260px * var(--ui-scale));
+      width: var(--side-column-width); 
+      min-width: 200px;
       flex-shrink: 0; 
       display: flex; 
       flex-direction: column; 
-      gap: calc(14px * var(--ui-scale)); 
+      gap: 14px; 
       min-height: 0;
     }
-    .side-windows-column .tac-window {
-      flex: 1;
-      min-height: 0;
-    }
-    .main-window-column { 
-      flex: 1; 
-      min-width: calc(520px * var(--ui-scale)); 
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-    .main-window-column .tac-window {
-      flex: 1;
-      min-height: 0;
-    }
+    .side-windows-column .tac-window { flex: 1; min-height: 0; }
+    .main-window-column { flex: 1; min-width: 400px; display: flex; flex-direction: column; min-height: 0; }
+    .main-window-column .tac-window { flex: 1; min-height: 0; }
 
     /* メインカレンダーマトリックス */
     .main-calendar-matrix {
-      flex: 1;
-      min-height: 0;
-      display: grid; 
+      flex: 1; min-height: 0; display: grid; 
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: calc(32px * var(--ui-scale)) repeat(6, 1fr);
+      grid-template-rows: 30px repeat(6, 1fr);
       background: var(--grid-line); gap: 1px;
     }
     .main-calendar-matrix .matrix-th {
       background: var(--th-bg); color: var(--th-text);
-      font-size: calc(0.92rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
     }
     .main-calendar-matrix .matrix-th.weekend {
       background: var(--th-weekend-bg); color: var(--th-weekend-text);
     }
     .main-calendar-matrix .matrix-cell {
-      background: var(--bg-window); padding: calc(6px * var(--ui-scale)) calc(12px * var(--ui-scale));
+      background: var(--bg-window); padding: 6px 10px;
       display: flex; flex-direction: column; justify-content: space-between; position: relative;
-      min-height: 0;
-      overflow: hidden;
+      min-height: 0; overflow: hidden;
     }
     .main-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.45; }
     .main-calendar-matrix .cell-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .main-calendar-matrix .day-num-wrap { display: flex; align-items: center; gap: 4px; }
     
-    .main-calendar-matrix .day-num {
-      font-size: calc(2.6rem * var(--ui-scale));
-      font-weight: 400;
-      letter-spacing: -0.05em;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .main-calendar-matrix .matrix-cell.is-past .day-num {
-      color: var(--past-badge-text) !important;
-      font-weight: 400;
-    }
-    .main-calendar-matrix .matrix-cell.is-past .cell-tag {
-      opacity: 0.75;
-    }
+    .main-calendar-matrix .day-num { font-size: 2.0rem; font-weight: 400; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .main-calendar-matrix .matrix-cell.is-past .day-num { color: var(--past-badge-text) !important; font-weight: 400; }
+    .main-calendar-matrix .matrix-cell.is-past .cell-tag { opacity: 0.75; }
 
     /* 当日セル */
-    .main-calendar-matrix .matrix-cell.is-today {
-      position: relative;
-      z-index: 6;
-      background: var(--bg-window) !important;
-      overflow: visible !important;
-    }
+    .main-calendar-matrix .matrix-cell.is-today { position: relative; z-index: 6; background: var(--bg-window) !important; overflow: visible !important; }
     .main-calendar-matrix .matrix-cell.is-today::before {
       content: '';
       position: absolute;
-      top: calc(-1 * var(--today-float-offset, 0.5em));
-      left: calc(-1 * var(--today-float-offset, 0.5em));
-      right: var(--today-float-offset, 0.5em);
-      bottom: var(--today-float-offset, 0.5em);
+      top: calc(-1 * var(--today-float-offset)); left: calc(-1 * var(--today-float-offset));
+      right: var(--today-float-offset); bottom: var(--today-float-offset);
       background: var(--bg-window);
       border: 1px solid var(--today-cell-border);
-      box-shadow: calc(14px * var(--ui-scale)) calc(18px * var(--ui-scale)) calc(32px * var(--ui-scale)) rgba(15, 23, 42, 0.18), calc(32px * var(--ui-scale)) calc(42px * var(--ui-scale)) calc(72px * var(--ui-scale)) rgba(15, 23, 42, 0.28);
-      z-index: 1;
-      pointer-events: none;
+      box-shadow: 14px 18px 32px rgba(15, 23, 42, 0.18), 32px 42px 72px rgba(15, 23, 42, 0.28);
+      z-index: 1; pointer-events: none;
     }
     [data-theme="dark"] .main-calendar-matrix .matrix-cell.is-today::before {
-      box-shadow: calc(14px * var(--ui-scale)) calc(18px * var(--ui-scale)) calc(36px * var(--ui-scale)) rgba(0, 0, 0, 0.85), calc(32px * var(--ui-scale)) calc(46px * var(--ui-scale)) calc(80px * var(--ui-scale)) rgba(0, 0, 0, 0.95);
+      box-shadow: 14px 18px 36px rgba(0, 0, 0, 0.85), 32px 46px 80px rgba(0, 0, 0, 0.95);
     }
-    .main-calendar-matrix .matrix-cell.is-today > * {
-      position: relative;
-      z-index: 3;
-    }
+    .main-calendar-matrix .matrix-cell.is-today > * { position: relative; z-index: 3; }
     .main-calendar-matrix .matrix-cell.is-today .cell-header,
     .main-calendar-matrix .matrix-cell.is-today .moon-svg-badge,
     .main-calendar-matrix .matrix-cell.is-today .solar-telemetry-bg {
-      transform: translate(calc(-1 * var(--today-float-offset, 0.5em)), calc(-1 * var(--today-float-offset, 0.5em)));
+      transform: translate(calc(-1 * var(--today-float-offset)), calc(-1 * var(--today-float-offset)));
     }
-    .main-calendar-matrix .matrix-cell.is-today .day-num {
-      background: var(--today-badge-bg);
-      color: var(--today-badge-text) !important;
-      padding: calc(2px * var(--ui-scale)) calc(7px * var(--ui-scale));
-      font-weight: 700;
-      border-radius: 2px;
-    }
-    
-    .main-calendar-matrix .matrix-cell.is-today.is-holiday-today .day-num {
-      background: var(--today-holiday-badge-bg) !important;
-      color: #ffffff !important;
-    }
+    .main-calendar-matrix .matrix-cell.is-today .day-num { background: var(--today-badge-bg); color: var(--today-badge-text) !important; padding: 2px 7px; font-weight: 700; border-radius: 2px; }
+    .main-calendar-matrix .matrix-cell.is-today.is-holiday-today .day-num { background: var(--today-holiday-badge-bg) !important; color: #ffffff !important; }
+    .main-calendar-matrix .matrix-cell.is-today .cell-tag { color: var(--text-main); font-weight: 700; display: inline-flex; align-items: center; justify-content: flex-end; }
 
-    .main-calendar-matrix .matrix-cell.is-today .cell-tag {
-      color: var(--text-main);
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .solar-telemetry-bg {
-      position: absolute !important;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2 !important;
-      pointer-events: none;
-      overflow: hidden;
-      border-radius: 1px;
-    }
-
-    .main-calendar-matrix .cell-tag {
-      font-size: calc(0.92rem * var(--ui-scale));
-      font-weight: 700;
-      color: var(--accent-gray);
-      background: transparent;
-      border: none;
-      padding: 0;
-      letter-spacing: 0.5px;
-      line-height: 1;
-    }
+    .solar-telemetry-bg { position: absolute !important; inset: 0; width: 100%; height: 100%; z-index: 2 !important; pointer-events: none; overflow: hidden; border-radius: 1px; }
+    .main-calendar-matrix .cell-tag { font-size: 0.82rem; font-weight: 700; color: var(--accent-gray); background: transparent; border: none; padding: 0; letter-spacing: 0.5px; line-height: 1; }
 
     .moon-svg-badge {
-      position: absolute;
-      bottom: calc(6px * var(--ui-scale));
-      right: calc(8px * var(--ui-scale));
-      display: inline-flex;
-      align-items: center;
-      gap: calc(5px * var(--ui-scale));
-      background: var(--moon-badge-bg);
-      color: var(--moon-badge-text);
-      padding: calc(3px * var(--ui-scale)) calc(7px * var(--ui-scale));
-      border-radius: 2px;
-      font-size: calc(0.85rem * var(--ui-scale));
-      font-weight: 700;
-      letter-spacing: -0.2px;
-      user-select: none;
-      z-index: 4;
+      position: absolute; bottom: 6px; right: 8px;
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--moon-badge-bg); color: var(--moon-badge-text);
+      padding: 3px 7px; border-radius: 2px; font-size: 0.78rem; font-weight: 700; letter-spacing: -0.2px; user-select: none; z-index: 4;
     }
-    .moon-svg-container {
-      width: calc(24px * var(--ui-scale));
-      height: calc(24px * var(--ui-scale));
-      flex-shrink: 0;
-    }
-
-    .moon-svg-pip {
-      position: absolute;
-      bottom: calc(4px * var(--ui-scale));
-      right: calc(4px * var(--ui-scale));
-      width: calc(16px * var(--ui-scale));
-      height: calc(16px * var(--ui-scale));
-      pointer-events: none;
-      z-index: 4;
-    }
+    .moon-svg-container { width: 20px; height: 20px; flex-shrink: 0; }
+    .moon-svg-pip { position: absolute; bottom: 4px; right: 4px; width: 14px; height: 14px; pointer-events: none; z-index: 4; }
 
     .legend-inline-bar {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: calc(18px * var(--ui-scale));
-      padding: calc(9px * var(--ui-scale)) calc(14px * var(--ui-scale));
-      background: var(--bg-window);
-      border: 1px solid var(--window-border);
-      box-shadow: var(--window-shadow);
-      font-size: calc(0.88rem * var(--ui-scale));
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--text-main);
-      user-select: none;
-      width: 100%;
-      flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center; gap: 18px;
+      padding: 9px 14px; background: var(--bg-window); border: 1px solid var(--window-border); box-shadow: var(--window-shadow);
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.5px; color: var(--text-main); user-select: none; width: 100%; flex-shrink: 0;
     }
-    .legend-inline-item { display: inline-flex; align-items: center; gap: calc(6px * var(--ui-scale)); }
-    .legend-svg-static {
-      width: calc(22px * var(--ui-scale));
-      height: calc(22px * var(--ui-scale));
-      display: inline-block;
-      flex-shrink: 0;
-    }
+    .legend-inline-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-svg-static { width: 18px; height: 18px; display: inline-block; flex-shrink: 0; }
     .legend-inline-divider { color: var(--accent-gray); opacity: 0.6; }
 
     .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
     .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
     
     .main-calendar-matrix .holiday-title {
-      font-size: calc(0.7rem * var(--ui-scale)); 
-      font-weight: 700; 
-      color: var(--holiday-text);
-      line-height: 1.15;
-      word-break: break-all;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      margin-top: 1px;
-      margin-bottom: calc(16px * var(--ui-scale));
-      z-index: 4;
+      font-size: 0.65rem; font-weight: 700; color: var(--holiday-text);
+      line-height: 1.15; word-break: break-all; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      margin-top: 1px; margin-bottom: 12px; z-index: 4;
     }
 
     /* サブカレンダー */
     .sub-calendar-matrix {
-      flex: 1;
-      min-height: 0;
-      display: grid; 
+      flex: 1; min-height: 0; display: grid; 
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: calc(26px * var(--ui-scale)) repeat(6, 1fr);
-      background: var(--grid-line); 
-      gap: 1px;
-    }
-    .sub-calendar-matrix .matrix-th {
-      background: var(--sub-th-bg); color: var(--th-text);
-      font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
-    }
-    .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
-    .sub-calendar-matrix .matrix-cell {
-      background: var(--bg-window); padding: calc(3px * var(--ui-scale)) calc(5px * var(--ui-scale));
-      display: flex; align-items: flex-start; justify-content: flex-start;
-      position: relative;
-      min-height: 0;
-    }
-    .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
-    .sub-calendar-matrix .day-num { font-size: calc(1.3rem * var(--ui-scale)); font-weight: 400; line-height: 1; }
-
-    .sub-calendar-matrix .matrix-cell.is-today,
-    .year-month-window .matrix-cell.is-today {
-      position: relative;
-      z-index: 6;
-      background: var(--bg-window) !important;
-    }
-    .sub-calendar-matrix .matrix-cell.is-today::before,
-    .year-month-window .matrix-cell.is-today::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--bg-window);
-      border: 1px solid var(--today-cell-border);
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
-      transform: translate(-0.35em, -0.35em);
-      z-index: 1;
-      pointer-events: none;
-    }
-    .sub-calendar-matrix .matrix-cell.is-today > *,
-    .year-month-window .matrix-cell.is-today > * {
-      position: relative;
-      z-index: 2;
-      transform: translate(-0.35em, -0.35em);
-    }
-    .sub-calendar-matrix .matrix-cell.is-today .day-num,
-    .year-month-window .matrix-cell.is-today .day-num {
-      background: var(--today-badge-bg);
-      color: var(--today-badge-text) !important;
-      padding: 1px 4px;
-      font-weight: 700;
-      border-radius: 2px;
-    }
-
-    /* 年表示：4x3 */
-    .year-grid-view { 
-      display: grid; 
-      grid-template-columns: repeat(4, 1fr); 
-      grid-template-rows: repeat(3, 1fr);
-      gap: calc(14px * var(--ui-scale)); 
-      width: 100%; 
-      height: 100%;
-      min-height: 0;
-    }
-    .year-month-window {
-      cursor: pointer;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-    }
-    .year-month-window .calendar-matrix {
-      flex: 1;
-      min-height: 0;
-      display: grid; 
-      grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: calc(24px * var(--ui-scale)) repeat(6, 1fr); 
+      grid-template-rows: 24px repeat(6, 1fr);
       background: var(--grid-line); gap: 1px;
     }
-    .year-month-window .matrix-th {
-      background: var(--th-bg); color: var(--th-text);
-      font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
+    .sub-calendar-matrix .matrix-th { background: var(--sub-th-bg); color: var(--th-text); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
+    .sub-calendar-matrix .matrix-cell { background: var(--bg-window); padding: 2px 4px; display: flex; align-items: flex-start; justify-content: flex-start; position: relative; min-height: 0; }
+    .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
+    .sub-calendar-matrix .day-num { font-size: 1.0rem; font-weight: 400; line-height: 1; }
+
+    .sub-calendar-matrix .matrix-cell.is-today,
+    .year-month-window .matrix-cell.is-today { position: relative; z-index: 6; background: var(--bg-window) !important; }
+    .sub-calendar-matrix .matrix-cell.is-today::before,
+    .year-month-window .matrix-cell.is-today::before {
+      content: ''; position: absolute; inset: 0; background: var(--bg-window);
+      border: 1px solid var(--today-cell-border); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      transform: translate(-0.35em, -0.35em); z-index: 1; pointer-events: none;
     }
+    .sub-calendar-matrix .matrix-cell.is-today > *,
+    .year-month-window .matrix-cell.is-today > * { position: relative; z-index: 2; transform: translate(-0.35em, -0.35em); }
+    .sub-calendar-matrix .matrix-cell.is-today .day-num,
+    .year-month-window .matrix-cell.is-today .day-num { background: var(--today-badge-bg); color: var(--today-badge-text) !important; padding: 1px 4px; font-weight: 700; border-radius: 2px; }
+
+    /* 年表示：4x3 */
+    .year-grid-view { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); gap: 14px; width: 100%; height: 100%; min-height: 0; }
+    .year-month-window { cursor: pointer; min-height: 0; display: flex; flex-direction: column; }
+    .year-month-window .calendar-matrix {
+      flex: 1; min-height: 0; display: grid; 
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: 22px repeat(6, 1fr); 
+      background: var(--grid-line); gap: 1px;
+    }
+    .year-month-window .matrix-th { background: var(--th-bg); color: var(--th-text); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .year-month-window .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
-    .year-month-window .matrix-cell {
-      background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start;
-      padding: calc(2px * var(--ui-scale)) calc(4px * var(--ui-scale));
-      position: relative;
-      min-height: 0;
-    }
+    .year-month-window .matrix-cell { background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 4px; position: relative; min-height: 0; }
     .year-month-window .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.3; }
-    .year-month-window .day-num { font-size: calc(0.92rem * var(--ui-scale)); font-weight: 600; }
+    .year-month-window .day-num { font-size: 0.85rem; font-weight: 600; }
 
     /* 5. BOTTOM TASKBAR */
     .screen-bottom-taskbar {
       width: 100%;
-      height: calc(44px * var(--ui-scale));
+      height: calc(44px * var(--footer-height-multiplier));
       min-height: 28px;
       background: var(--bar-footer);
       color: var(--bar-footer-text);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 calc(24px * var(--ui-scale));
-      font-size: calc(0.88rem * var(--ui-scale));
+      padding: 0 24px;
+      font-size: 0.85rem;
       font-weight: 600;
       border-top: 1px solid var(--window-border);
       flex-shrink: 0;
     }
     .footer-left-status { color: #00cc66; font-weight: 700; display: flex; gap: 16px; align-items: center; }
-    .footer-right-status { display: flex; gap: calc(24px * var(--ui-scale)); align-items: center; }
-    .debug-toggle-btn {
-      background: transparent; border: none; color: var(--bar-footer-text);
-      font-family: inherit; font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; cursor: pointer; opacity: 0.6;
-    }
+    .footer-right-status { display: flex; gap: 24px; align-items: center; }
+    .debug-toggle-btn { background: transparent; border: none; color: var(--bar-footer-text); font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer; opacity: 0.6; }
     .debug-toggle-btn:hover { opacity: 1; color: #00cc66; }
 
-    /* Debug OS Window */
-    #debug-window {
-      display: none;
-      position: fixed;
-      top: 60px;
-      left: calc(50% - 210px);
-      width: 420px;
-      background: var(--bg-window);
-      border: 1px solid var(--window-border);
-      box-shadow: var(--window-shadow);
-      z-index: 9999;
-      font-family: inherit;
-      font-size: 0.72rem;
-      user-select: none;
+    /* OS Windows (Debug / Config)共通スタイル */
+    .os-floating-window {
+      display: none; position: fixed; top: 60px; width: 420px;
+      background: var(--bg-window); border: 1px solid var(--window-border); box-shadow: var(--window-shadow);
+      z-index: 9999; font-family: inherit; font-size: 0.72rem; user-select: none;
     }
-    #debug-header {
-      background: var(--bar-header);
-      color: var(--bar-header-text);
-      padding: 6px 10px;
-      cursor: move;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
+    .os-win-header {
+      background: var(--bar-header); color: var(--bar-header-text); padding: 6px 10px;
+      cursor: move; display: flex; justify-content: space-between; align-items: center; font-weight: 700;
     }
-    #debug-close {
+    .os-win-close {
       background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff;
-      width: 16px; height: 16px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
+      width: 16px; height: 16px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .debug-body {
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 460px;
-      overflow-y: auto;
-    }
-    .debug-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-    .debug-row label {
-      color: var(--text-sub);
-      font-weight: 600;
-    }
-    .debug-input {
-      background: var(--bg-screen);
-      border: 1px solid var(--window-border);
-      color: var(--text-main);
-      padding: 3px 6px;
-      font-family: inherit;
-      font-size: 0.72rem;
-      width: 180px;
-    }
-    .debug-textarea {
-      background: var(--bg-screen);
-      border: 1px solid var(--window-border);
-      color: var(--text-main);
-      padding: 6px;
-      font-family: inherit;
-      font-size: 0.68rem;
-      width: 100%;
-      height: 50px;
-      resize: none;
-    }
-    .debug-note {
-      font-size: 0.65rem;
-      color: var(--accent-gray);
-      line-height: 1.3;
-    }
+    /* 修正: max-heightを広げ、スクロールと内部の余裕を持たせる */
+    .os-win-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 560px; overflow-y: auto; }
+    .os-win-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .os-win-row label { color: var(--text-sub); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -997,7 +663,6 @@
       <span>CB-TACTICAL</span>
       <div class="header-ctrl-group">
         <button id="header-theme-btn" class="header-btn" type="button">THEME: DARK</button>
-        <button id="header-size-btn" class="header-btn" type="button">SCALE: FHD</button>
       </div>
       <span style="color: var(--accent-gray);">//</span>
       <span>VEDA-LINK TERMINAL NODE: 04</span>
@@ -1139,64 +804,167 @@
     <div class="footer-right-status">
       <div id="grid-status">LAYOUT: 3-WINDOW TACTICAL (30% PREV/NEXT | 70% MAIN)</div>
       <div id="holiday-count">LOADED_HOLIDAYS: --</div>
-      <button id="debug-trigger" class="debug-toggle-btn" type="button">[DBG]</button>
+      <div style="display:flex; gap:10px;">
+        <button id="config-trigger" class="debug-toggle-btn" type="button">[CFG]</button>
+        <button id="debug-trigger" class="debug-toggle-btn" type="button">[DBG]</button>
+      </div>
     </div>
   </footer>
 
   <!-- Debug OS Window -->
-  <div id="debug-window">
-    <div id="debug-header">
+  <div id="debug-window" class="os-floating-window" style="left: calc(50% - 220px);">
+    <div id="debug-header" class="os-win-header">
       <span>[DEBUG_TERMINAL // SYSTEM_DIAGNOSTICS]</span>
-      <button id="debug-close" type="button">X</button>
+      <button id="debug-close" class="os-win-close" type="button">X</button>
     </div>
-    <div class="debug-body">
-      <div class="debug-row">
+    <div class="os-win-body">
+      <div class="os-win-row">
         <label>SYS_DATE_OVERRIDE</label>
-        <input type="date" id="dbg-date-input" class="debug-input">
+        <input type="date" id="dbg-date-input" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
       </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>SYS_TIME_OVERRIDE (SUN POS)</label>
         <div style="display:flex; align-items:center; gap:6px; width:180px;">
           <input type="range" id="dbg-range-time" min="0" max="1439" step="1" value="720" style="flex:1;">
           <span id="dbg-val-time" style="font-weight:700; width:44px; text-align:right;">AUTO</span>
         </div>
       </div>
-      <div class="debug-row">
-        <label>TODAY_FLOAT_OFFSET</label>
-        <div style="display:flex; align-items:center; gap:6px; width:180px;">
-          <input type="range" id="dbg-range-offset" min="0.2" max="1.2" step="0.05" value="0.45" style="flex:1;">
-          <span id="dbg-val-offset" style="font-weight:700; width:36px; text-align:right;">0.45em</span>
-        </div>
-      </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>TODAY_MOON_AGE (0-29.5)</label>
         <div style="display:flex; align-items:center; gap:6px; width:180px;">
           <input type="range" id="dbg-range-age" min="0" max="29.5" step="0.1" value="0" style="flex:1;">
           <span id="dbg-val-age" style="font-weight:700; width:36px; text-align:right;">AUTO</span>
         </div>
       </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>OVERRIDE_HOLIDAY</label>
-        <input type="date" id="dbg-holiday-date" class="debug-input">
+        <input type="date" id="dbg-holiday-date" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
       </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>HOLIDAY_NAME</label>
-        <input type="text" id="dbg-holiday-name" class="debug-input" placeholder="SPECIAL HOLIDAY">
+        <input type="text" id="dbg-holiday-name" placeholder="SPECIAL HOLIDAY" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
       </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>OVERRIDE_NEW_MOON</label>
-        <input type="date" id="dbg-newmoon-date" class="debug-input">
+        <input type="date" id="dbg-newmoon-date" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
       </div>
-      <div class="debug-row">
+      <div class="os-win-row">
         <label>OVERRIDE_FULL_MOON</label>
-        <input type="date" id="dbg-fullmoon-date" class="debug-input">
+        <input type="date" id="dbg-fullmoon-date" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
       </div>
-      <div class="debug-note">※ 新月・満月指定は当日以外の日にのみ有効です（指定月相の自動推算値をクリアして再配置します）。</div>
+      <div style="font-size: 0.65rem; color: var(--accent-gray); line-height: 1.3;">※ 新月・満月指定は当日以外の日にのみ有効です。</div>
       <div style="display:flex; flex-direction:column; gap:4px;">
         <label style="color:var(--text-sub);">SYSTEM_LOGS</label>
-        <textarea id="dbg-logs" class="debug-textarea" readonly></textarea>
+        <textarea id="dbg-logs" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:6px; font-family:inherit; font-size:0.68rem; width:100%; height:50px; resize:none;" readonly></textarea>
       </div>
-      <button id="dbg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center;">RESET CONFIGURATIONS</button>
+      <button id="dbg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center;">RESET DIAGNOSTICS</button>
+    </div>
+  </div>
+
+  <!-- Config OS Window -->
+  <div id="config-window" class="os-floating-window" style="left: calc(50% + 15px);">
+    <div id="config-header" class="os-win-header">
+      <span>[TERMINAL_CONFIG // LIVE_STYLING]</span>
+      <button id="config-close" class="os-win-close" type="button">X</button>
+    </div>
+    <div class="os-win-body">
+      <!-- 1. 幅・レイアウトの設定 -->
+      <div class="os-win-row">
+        <label>VIEWPORT_WIDTH (vw)</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-width-vw" min="50" max="100" step="1" value="82" style="flex:1;">
+          <span id="cfg-val-width-vw" style="font-weight:700; width:44px; text-align:right;">82vw</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>VIEWPORT_MAX_WIDTH</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-width-px" min="1000" max="4000" step="50" value="1400" style="flex:1;">
+          <span id="cfg-val-width-px" style="font-weight:700; width:44px; text-align:right;">1400px</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>SIDE_COLUMN_WIDTH (%)</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-side-width" min="15" max="40" step="1" value="22.5" style="flex:1;">
+          <span id="cfg-val-side-width" style="font-weight:700; width:44px; text-align:right;">22.5%</span>
+        </div>
+      </div>
+      
+      <!-- 2. 高さの設定（上から下へ） -->
+      <div class="os-win-row">
+        <label>HEADER_HEIGHT</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-header" min="0.5" max="2.0" step="0.1" value="1.0" style="flex:1;">
+          <span id="cfg-val-header" style="font-weight:700; width:36px; text-align:right;">1.0x</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>TELEMETRY_HEIGHT</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-telemetry" min="0.5" max="2.0" step="0.1" value="1.0" style="flex:1;">
+          <span id="cfg-val-telemetry" style="font-weight:700; width:36px; text-align:right;">1.0x</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>CONTROL_BAR_HEIGHT</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-ctrl" min="0.5" max="2.0" step="0.1" value="1.0" style="flex:1;">
+          <span id="cfg-val-ctrl" style="font-weight:700; width:36px; text-align:right;">1.0x</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>FOOTER_HEIGHT</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-footer" min="0.5" max="2.0" step="0.1" value="1.0" style="flex:1;">
+          <span id="cfg-val-footer" style="font-weight:700; width:36px; text-align:right;">1.0x</span>
+        </div>
+      </div>
+      
+      <!-- 3. エフェクトの設定 -->
+      <div class="os-win-row">
+        <label>WINDOW_SHADOW_INTENSITY</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-shadow" min="0.0" max="0.5" step="0.01" value="0.08" style="flex:1;">
+          <span id="cfg-val-shadow" style="font-weight:700; width:36px; text-align:right;">0.08</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>TODAY_FLOAT_OFFSET</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-offset" min="0.0" max="1.5" step="0.05" value="0.45" style="flex:1;">
+          <span id="cfg-val-offset" style="font-weight:700; width:36px; text-align:right;">0.45em</span>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top:1px solid var(--window-border); margin:4px 0;">
+      
+      <!-- 4. テーマ保存・復元 -->
+      <div class="os-win-row">
+        <label>THEME_SLOT (1-5)</label>
+        <select id="cfg-slot-select" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
+          <option value="0">SLOT 1: [EMPTY]</option>
+          <option value="1">SLOT 2: [EMPTY]</option>
+          <option value="2">SLOT 3: [EMPTY]</option>
+          <option value="3">SLOT 4: [EMPTY]</option>
+          <option value="4">SLOT 5: [EMPTY]</option>
+        </select>
+      </div>
+      <div class="os-win-row">
+        <label>CUSTOM_THEME_NAME</label>
+        <input type="text" id="cfg-theme-name" placeholder="My Terminal 01" style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:3px 6px; font-family:inherit; font-size:0.72rem; width:180px;">
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button id="cfg-save-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">SAVE TO SLOT</button>
+        <button id="cfg-load-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">LOAD SLOT</button>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button id="cfg-export-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">EXPORT JSON</button>
+        <button id="cfg-import-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">IMPORT JSON</button>
+      </div>
+      <!-- 修正: 完全に独立したブロックとして高さを確保 -->
+      <textarea id="cfg-json-area" placeholder="JSON configuration stream..." style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:6px; font-family:inherit; font-size:0.72rem; width:100%; height:90px; resize:vertical; display:block; margin-top:4px;"></textarea>
+      <button id="cfg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center; color:#ff7766;">RESET TO DEFAULT</button>
     </div>
   </div>
 
@@ -1213,10 +981,10 @@
       let currentDate = new Date();
       let viewMode = 'MONTH';
       let currentTheme = 'light';
-      let currentSize = 'fhd';
       let holidaysCache = null;
       let lastDateKey = null;
       let debugModeActive = false;
+      let configModeActive = false;
 
       const monthPhaseCache = new Map();
       const systemLogs = [];
@@ -1245,13 +1013,18 @@
       const todayBtn = document.getElementById('today-btn');
       const toggleViewBtn = document.getElementById('toggle-view-btn');
       const headerThemeBtn = document.getElementById('header-theme-btn');
-      const headerSizeBtn = document.getElementById('header-size-btn');
       const dynamicFaviconEl = document.getElementById('dynamic-favicon');
       const controlBarEl = document.getElementById('control-bar');
+      
       const debugTrigger = document.getElementById('debug-trigger');
       const debugWindow = document.getElementById('debug-window');
       const debugClose = document.getElementById('debug-close');
       const debugHeader = document.getElementById('debug-header');
+
+      const configTrigger = document.getElementById('config-trigger');
+      const configWindow = document.getElementById('config-window');
+      const configClose = document.getElementById('config-close');
+      const configHeader = document.getElementById('config-header');
 
       const gaugeDayCircle = document.getElementById('gauge-day-circle');
       const gaugeDayVal = document.getElementById('gauge-day-val');
@@ -1314,10 +1087,250 @@
       const dateInput = document.getElementById('dbg-date-input');
       const rangeTime = document.getElementById('dbg-range-time');
       const valTime = document.getElementById('dbg-val-time');
-      const rangeOffset = document.getElementById('dbg-range-offset');
-      const valOffset = document.getElementById('dbg-val-offset');
       const rangeAge = document.getElementById('dbg-range-age');
       const valAge = document.getElementById('dbg-val-age');
+
+      // Config Sliders & Controls
+      const cfgRangeWidthVw = document.getElementById('cfg-range-width-vw');
+      const cfgValWidthVw = document.getElementById('cfg-val-width-vw');
+      const cfgRangeWidthPx = document.getElementById('cfg-range-width-px');
+      const cfgValWidthPx = document.getElementById('cfg-val-width-px');
+      const cfgRangeSideWidth = document.getElementById('cfg-range-side-width');
+      const cfgValSideWidth = document.getElementById('cfg-val-side-width');
+      
+      const cfgRangeHeader = document.getElementById('cfg-range-header');
+      const cfgValHeader = document.getElementById('cfg-val-header');
+      const cfgRangeTelemetry = document.getElementById('cfg-range-telemetry');
+      const cfgValTelemetry = document.getElementById('cfg-val-telemetry');
+      const cfgRangeCtrl = document.getElementById('cfg-range-ctrl');
+      const cfgValCtrl = document.getElementById('cfg-val-ctrl');
+      const cfgRangeFooter = document.getElementById('cfg-range-footer');
+      const cfgValFooter = document.getElementById('cfg-val-footer');
+
+      const cfgRangeShadow = document.getElementById('cfg-range-shadow');
+      const cfgValShadow = document.getElementById('cfg-val-shadow');
+      const cfgRangeOffset = document.getElementById('cfg-range-offset');
+      const cfgValOffset = document.getElementById('cfg-val-offset');
+      
+      const cfgSlotSelect = document.getElementById('cfg-slot-select');
+      const cfgThemeName = document.getElementById('cfg-theme-name');
+      const cfgSaveBtn = document.getElementById('cfg-save-btn');
+      const cfgLoadBtn = document.getElementById('cfg-load-btn');
+      const cfgExportBtn = document.getElementById('cfg-export-btn');
+      const cfgImportBtn = document.getElementById('cfg-import-btn');
+      const cfgJsonArea = document.getElementById('cfg-json-area');
+      const cfgResetBtn = document.getElementById('cfg-reset-btn');
+
+      // Live Preview & Config Application Logic
+      const applyConfigValues = (config, saveStorage = true) => {
+        if (config.widthVw !== undefined) {
+          cfgRangeWidthVw.value = config.widthVw;
+          cfgValWidthVw.textContent = config.widthVw + 'vw';
+          document.documentElement.style.setProperty('--viewport-width-vw', config.widthVw + 'vw');
+        }
+        if (config.widthPx !== undefined) {
+          cfgRangeWidthPx.value = config.widthPx;
+          cfgValWidthPx.textContent = config.widthPx + 'px';
+          document.documentElement.style.setProperty('--viewport-max-width', config.widthPx + 'px');
+        }
+        if (config.sideWidth !== undefined) {
+          cfgRangeSideWidth.value = config.sideWidth;
+          cfgValSideWidth.textContent = config.sideWidth + '%';
+          document.documentElement.style.setProperty('--side-column-width', config.sideWidth + '%');
+        }
+        if (config.headerScale !== undefined) {
+          cfgRangeHeader.value = config.headerScale;
+          cfgValHeader.textContent = Number(config.headerScale).toFixed(1) + 'x';
+          document.documentElement.style.setProperty('--header-height-multiplier', config.headerScale);
+        }
+        if (config.telemetryScale !== undefined) {
+          cfgRangeTelemetry.value = config.telemetryScale;
+          cfgValTelemetry.textContent = Number(config.telemetryScale).toFixed(1) + 'x';
+          document.documentElement.style.setProperty('--telemetry-height-multiplier', config.telemetryScale);
+        }
+        if (config.ctrlScale !== undefined) {
+          cfgRangeCtrl.value = config.ctrlScale;
+          cfgValCtrl.textContent = Number(config.ctrlScale).toFixed(1) + 'x';
+          document.documentElement.style.setProperty('--control-bar-height-multiplier', config.ctrlScale);
+        }
+        if (config.footerScale !== undefined) {
+          cfgRangeFooter.value = config.footerScale;
+          cfgValFooter.textContent = Number(config.footerScale).toFixed(1) + 'x';
+          document.documentElement.style.setProperty('--footer-height-multiplier', config.footerScale);
+        }
+        if (config.shadowAlpha !== undefined) {
+          cfgRangeShadow.value = config.shadowAlpha;
+          cfgValShadow.textContent = config.shadowAlpha;
+          document.documentElement.style.setProperty('--shadow-alpha', config.shadowAlpha);
+        }
+        if (config.offset !== undefined) {
+          cfgRangeOffset.value = config.offset;
+          cfgValOffset.textContent = config.offset + 'em';
+          document.documentElement.style.setProperty('--today-float-offset', config.offset + 'em');
+        }
+
+        if (saveStorage) {
+          localStorage.setItem('cb_current_config', JSON.stringify(getCurrentConfigObject()));
+        }
+      };
+
+      const getCurrentConfigObject = () => ({
+        widthVw: cfgRangeWidthVw.value,
+        widthPx: cfgRangeWidthPx.value,
+        sideWidth: cfgRangeSideWidth.value,
+        headerScale: cfgRangeHeader.value,
+        telemetryScale: cfgRangeTelemetry.value,
+        ctrlScale: cfgRangeCtrl.value,
+        footerScale: cfgRangeFooter.value,
+        shadowAlpha: cfgRangeShadow.value,
+        offset: cfgRangeOffset.value
+      });
+
+      // Event Listeners for Live Preview
+      cfgRangeWidthVw.addEventListener('input', () => applyConfigValues({ widthVw: cfgRangeWidthVw.value }));
+      cfgRangeWidthPx.addEventListener('input', () => applyConfigValues({ widthPx: cfgRangeWidthPx.value }));
+      cfgRangeSideWidth.addEventListener('input', () => applyConfigValues({ sideWidth: cfgRangeSideWidth.value }));
+      cfgRangeHeader.addEventListener('input', () => applyConfigValues({ headerScale: cfgRangeHeader.value }));
+      cfgRangeTelemetry.addEventListener('input', () => applyConfigValues({ telemetryScale: cfgRangeTelemetry.value }));
+      cfgRangeCtrl.addEventListener('input', () => applyConfigValues({ ctrlScale: cfgRangeCtrl.value }));
+      cfgRangeFooter.addEventListener('input', () => applyConfigValues({ footerScale: cfgRangeFooter.value }));
+      cfgRangeShadow.addEventListener('input', () => applyConfigValues({ shadowAlpha: cfgRangeShadow.value }));
+      cfgRangeOffset.addEventListener('input', () => applyConfigValues({ offset: cfgRangeOffset.value }));
+
+      // Slot & Theme Persistence
+      const updateSlotDropdownLabels = () => {
+        const themes = JSON.parse(localStorage.getItem('cb_theme_slots') || '[]');
+        for (let i = 0; i < 5; i++) {
+          const slotData = themes[i];
+          const opt = cfgSlotSelect.options[i];
+          if (slotData) {
+            opt.textContent = `SLOT ${i + 1}: ${slotData.name}`;
+          } else {
+            opt.textContent = `SLOT ${i + 1}: [EMPTY]`;
+          }
+        }
+      };
+
+      cfgSaveBtn.addEventListener('click', () => {
+        const slotIdx = parseInt(cfgSlotSelect.value, 10);
+        let name = cfgThemeName.value.trim();
+        if (!name) {
+          name = `Custom Theme ${slotIdx + 1}`;
+        }
+        const themes = JSON.parse(localStorage.getItem('cb_theme_slots') || '[]');
+        themes[slotIdx] = {
+          name: name,
+          config: getCurrentConfigObject()
+        };
+        localStorage.setItem('cb_theme_slots', JSON.stringify(themes));
+        updateSlotDropdownLabels();
+        logMessage(`Theme saved to SLOT ${slotIdx + 1} (${name}).`);
+      });
+
+      cfgLoadBtn.addEventListener('click', () => {
+        const slotIdx = parseInt(cfgSlotSelect.value, 10);
+        const themes = JSON.parse(localStorage.getItem('cb_theme_slots') || '[]');
+        const slotData = themes[slotIdx];
+        if (slotData && slotData.config) {
+          applyConfigValues(slotData.config, true);
+          cfgThemeName.value = slotData.name;
+          logMessage(`Theme loaded from SLOT ${slotIdx + 1} (${slotData.name}).`);
+        } else {
+          logMessage(`SLOT ${slotIdx + 1} is empty.`);
+        }
+      });
+
+      cfgExportBtn.addEventListener('click', () => {
+        const exportData = {
+          name: cfgThemeName.value.trim() || 'Exported Theme',
+          config: getCurrentConfigObject()
+        };
+        cfgJsonArea.value = JSON.stringify(exportData, null, 2);
+        logMessage('Configuration exported to JSON.');
+      });
+
+      cfgImportBtn.addEventListener('click', () => {
+        try {
+          const parsed = JSON.parse(cfgJsonArea.value);
+          if (parsed && parsed.config) {
+            applyConfigValues(parsed.config, true);
+            if (parsed.name) cfgThemeName.value = parsed.name;
+            logMessage('Configuration successfully imported.');
+          } else {
+            throw new Error();
+          }
+        } catch {
+          logMessage('Invalid JSON format for import.');
+        }
+      });
+
+      cfgResetBtn.addEventListener('click', () => {
+        const defaultConfig = { 
+          widthVw: '82', widthPx: '1400', sideWidth: '22.5',
+          headerScale: '1.0', telemetryScale: '1.0', ctrlScale: '1.0', footerScale: '1.0', 
+          shadowAlpha: '0.08', offset: '0.45' 
+        };
+        applyConfigValues(defaultConfig, true);
+        cfgThemeName.value = '';
+        logMessage('Configuration reset to default.');
+      });
+
+      // Load initial local config if exists
+      const savedConfig = localStorage.getItem('cb_current_config');
+      if (savedConfig) {
+        try { applyConfigValues(JSON.parse(savedConfig), false); } catch {}
+      }
+      updateSlotDropdownLabels();
+
+      // Draggable OS Windows Logic
+      const makeDraggable = (winEl, headerEl) => {
+        let isDragging = false;
+        let dragOffsetX = 0, dragOffsetY = 0;
+
+        headerEl.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          dragOffsetX = e.clientX - winEl.offsetLeft;
+          dragOffsetY = e.clientY - winEl.offsetTop;
+          e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          winEl.style.left = (e.clientX - dragOffsetX) + 'px';
+          winEl.style.top = (e.clientY - dragOffsetY) + 'px';
+        });
+
+        window.addEventListener('mouseup', () => {
+          isDragging = false;
+        });
+      };
+
+      makeDraggable(debugWindow, debugHeader);
+      makeDraggable(configWindow, configHeader);
+
+      debugTrigger.addEventListener('click', () => {
+        debugModeActive = !debugModeActive;
+        document.body.classList.toggle('debug-active', debugModeActive);
+        debugWindow.style.display = debugModeActive ? 'block' : 'none';
+        logMessage(debugModeActive ? 'DEBUG_MODE activated.' : 'DEBUG_MODE deactivated.');
+      });
+
+      debugClose.addEventListener('click', () => {
+        debugModeActive = false;
+        document.body.classList.remove('debug-active');
+        debugWindow.style.display = 'none';
+      });
+
+      configTrigger.addEventListener('click', () => {
+        configModeActive = !configModeActive;
+        configWindow.style.display = configModeActive ? 'block' : 'none';
+        logMessage(configModeActive ? 'CONFIG_WINDOW opened.' : 'CONFIG_WINDOW closed.');
+      });
+
+      configClose.addEventListener('click', () => {
+        configModeActive = false;
+        configWindow.style.display = 'none';
+      });
 
       const formatMinsToHHMM = (mins) => {
         const h = String(Math.floor(mins / 60)).padStart(2, '0');
@@ -1338,12 +1351,6 @@
         render();
       });
 
-      rangeOffset.addEventListener('input', () => {
-        const val = rangeOffset.value;
-        valOffset.textContent = val + 'em';
-        document.documentElement.style.setProperty('--today-float-offset', val + 'em');
-      });
-
       rangeAge.addEventListener('input', () => {
         if (rangeAge.value === '0') {
           valAge.textContent = 'AUTO';
@@ -1352,67 +1359,6 @@
         }
         updateLiveClock();
         render();
-      });
-
-      // Draggable Window Logic
-      let isDragging = false;
-      let dragOffsetX = 0, dragOffsetY = 0;
-
-      debugHeader.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        dragOffsetX = e.clientX - debugWindow.offsetLeft;
-        dragOffsetY = e.clientY - debugWindow.offsetTop;
-        e.preventDefault();
-      });
-
-      window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        debugWindow.style.left = (e.clientX - dragOffsetX) + 'px';
-        debugWindow.style.top = (e.clientY - dragOffsetY) + 'px';
-      });
-
-      window.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
-
-      debugTrigger.addEventListener('click', () => {
-        debugModeActive = !debugModeActive;
-        document.body.classList.toggle('debug-active', debugModeActive);
-        debugWindow.style.display = debugModeActive ? 'block' : 'none';
-        logMessage(debugModeActive ? 'DEBUG_MODE activated.' : 'DEBUG_MODE deactivated.');
-      });
-
-      const resetDebugConfigs = () => {
-        const holidayDate = document.getElementById('dbg-holiday-date');
-        const holidayName = document.getElementById('dbg-holiday-name');
-        const newmoonDate = document.getElementById('dbg-newmoon-date');
-        const fullmoonDate = document.getElementById('dbg-fullmoon-date');
-        
-        dateInput.value = '';
-        delete rangeTime.dataset.active;
-        rangeTime.value = '720';
-        valTime.textContent = 'AUTO';
-
-        if (holidayDate) holidayDate.value = '';
-        if (holidayName) holidayName.value = '';
-        if (newmoonDate) newmoonDate.value = '';
-        if (fullmoonDate) fullmoonDate.value = '';
-        
-        rangeAge.value = '0';
-        valAge.textContent = 'AUTO';
-
-        applySize(currentSize, false);
-
-        monthPhaseCache.clear();
-        logMessage('Debug configurations reset.');
-        render();
-      };
-
-      debugClose.addEventListener('click', () => {
-        debugModeActive = false;
-        document.body.classList.remove('debug-active');
-        debugWindow.style.display = 'none';
-        resetDebugConfigs();
       });
 
       document.getElementById('dbg-holiday-date').addEventListener('input', () => {
@@ -1433,7 +1379,19 @@
         render();
       });
       document.getElementById('dbg-reset-btn').addEventListener('click', () => {
-        resetDebugConfigs();
+        dateInput.value = '';
+        delete rangeTime.dataset.active;
+        rangeTime.value = '720';
+        valTime.textContent = 'AUTO';
+        document.getElementById('dbg-holiday-date').value = '';
+        document.getElementById('dbg-holiday-name').value = '';
+        document.getElementById('dbg-newmoon-date').value = '';
+        document.getElementById('dbg-fullmoon-date').value = '';
+        rangeAge.value = '0';
+        valAge.textContent = 'AUTO';
+        monthPhaseCache.clear();
+        logMessage('Diagnostics reset.');
+        render();
       });
 
       if ('serviceWorker' in navigator) {
@@ -1882,25 +1840,10 @@
       setInterval(updateLiveClock, 1000);
       updateLiveClock();
 
-      const detectDefaultSize = () => {
-        const w = window.innerWidth;
-        if (w >= 2400) return '4k';
-        if (w >= 1800) return 'wqhd';
-        return 'fhd';
-      };
-
       const syncStateFromUrl = () => {
         const params = new URLSearchParams(window.location.search);
         currentTheme = params.get('theme') === 'dark' ? 'dark' : 'light';
         applyTheme(currentTheme, false);
-
-        const paramSize = (params.get('size') || '').toLowerCase();
-        if (['fhd', 'wqhd', '4k'].includes(paramSize)) {
-          currentSize = paramSize;
-        } else {
-          currentSize = detectDefaultSize();
-        }
-        applySize(currentSize, false);
 
         viewMode = params.get('view') === 'year' ? 'YEAR' : 'MONTH';
 
@@ -1920,7 +1863,6 @@
         const year = currentDate.getFullYear();
         const month = String(currentDate.getMonth() + 1).padStart(2, '0');
         params.set('theme', currentTheme);
-        params.set('size', currentSize);
         params.set('view', viewMode.toLowerCase());
         params.set('date', viewMode === 'YEAR' ? `${year}` : `${year}-${month}`);
         window.history.pushState(null, '', `${window.location.pathname}?${params.toString()}`);
@@ -1935,21 +1877,6 @@
           document.documentElement.removeAttribute('data-theme');
           headerThemeBtn.textContent = 'THEME: DARK';
         }
-        if (updateUrl) updateUrlParams();
-      };
-
-      const applySize = (size, updateUrl = true) => {
-        currentSize = size;
-        document.documentElement.setAttribute('data-size', size);
-        headerSizeBtn.textContent = `SCALE: ${size.toUpperCase()}`;
-
-        const sizeOffsets = { fhd: '0.42', wqhd: '0.5', '4k': '0.6' };
-        if (rangeOffset) {
-          rangeOffset.value = sizeOffsets[size];
-          valOffset.textContent = sizeOffsets[size] + 'em';
-          document.documentElement.style.setProperty('--today-float-offset', sizeOffsets[size] + 'em');
-        }
-
         if (updateUrl) updateUrlParams();
       };
 
@@ -2294,11 +2221,6 @@
 
       headerThemeBtn.addEventListener('click', () => {
         applyTheme(currentTheme === 'light' ? 'dark' : 'light', true);
-      });
-
-      headerSizeBtn.addEventListener('click', () => {
-        const nextSizeMap = { fhd: 'wqhd', wqhd: '4k', '4k': 'fhd' };
-        applySize(nextSizeMap[currentSize] || 'fhd', true);
       });
 
       window.addEventListener('popstate', () => {
