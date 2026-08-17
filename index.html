@@ -73,46 +73,24 @@
 
       --today-cell-border: rgba(15, 23, 42, 0.16);
 
-      /* デフォルト: FHD (1080p) スケール - 現代的フォント基準 */
-      --viewport-max-width: 1440px;
-      --side-window-width: 300px;
-      --section-gap: 12px;
-      --header-height: 54px;
-      --footer-height: 34px;
-      --gauge-size: 44px;
-      --day-num-size: 1.85rem;
-      --today-icon-size: 22px;
-      --moon-icon-size: 20px;
-      --moon-pip-size: 14px;
-      --today-float-offset: 0.45em;
+      /* 4Kを1.0とした完全相似スケーリング */
+      --ui-scale: 0.52;
+      --viewport-max-width: 1400px;
+    }
+
+    [data-size="fhd"] {
+      --ui-scale: 0.52;
+      --viewport-max-width: 1400px;
     }
 
     [data-size="wqhd"] {
-      --viewport-max-width: 1840px;
-      --side-window-width: 360px;
-      --section-gap: 16px;
-      --header-height: 62px;
-      --footer-height: 38px;
-      --gauge-size: 50px;
-      --day-num-size: 2.25rem;
-      --today-icon-size: 26px;
-      --moon-icon-size: 24px;
-      --moon-pip-size: 16px;
-      --today-float-offset: 0.5em;
+      --ui-scale: 0.68;
+      --viewport-max-width: 1860px;
     }
 
     [data-size="4k"] {
-      --viewport-max-width: 2560px;
-      --side-window-width: 480px;
-      --section-gap: 22px;
-      --header-height: 74px;
-      --footer-height: 46px;
-      --gauge-size: 64px;
-      --day-num-size: 3rem;
-      --today-icon-size: 32px;
-      --moon-icon-size: 30px;
-      --moon-pip-size: 20px;
-      --today-float-offset: 0.6em;
+      --ui-scale: 1.0;
+      --viewport-max-width: 2700px;
     }
 
     [data-theme="dark"] {
@@ -211,49 +189,51 @@
     /* 1. TOP TASKBAR */
     .screen-top-taskbar {
       width: 100%;
-      height: var(--header-height);
+      height: calc(64px * var(--ui-scale));
+      min-height: 32px;
       background: var(--bar-header);
       color: var(--bar-header-text);
-      clip-path: polygon(0 0, 100% 0, 100% 100%, calc(100% - 370px) 100%, calc(100% - 400px) 32px, 0 32px);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, calc(100% - calc(500px * var(--ui-scale))) 100%, calc(100% - calc(540px * var(--ui-scale))) calc(36px * var(--ui-scale)), 0 calc(36px * var(--ui-scale)));
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: var(--section-gap);
+      margin-bottom: calc(16px * var(--ui-scale));
       border-bottom: 1px solid var(--window-border);
       flex-shrink: 0;
     }
     .taskbar-left {
-      height: 32px;
+      height: calc(36px * var(--ui-scale));
+      min-height: 24px;
       flex: 1;
       display: flex;
       align-items: center;
-      padding: 0 20px;
-      font-size: 0.82rem;
+      padding: 0 calc(24px * var(--ui-scale));
+      font-size: calc(1.05rem * var(--ui-scale));
       font-weight: 700;
       letter-spacing: 0.6px;
-      gap: 14px;
+      gap: calc(16px * var(--ui-scale));
     }
     .status-indicator {
       display: inline-block;
-      width: 9px;
-      height: 9px;
+      width: calc(11px * var(--ui-scale));
+      height: calc(11px * var(--ui-scale));
       background: #00cc66;
       margin-right: 2px;
-      box-shadow: 0 0 8px #00cc66;
+      box-shadow: 0 0 calc(8px * var(--ui-scale)) #00cc66;
       flex-shrink: 0;
     }
     .header-ctrl-group {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: calc(10px * var(--ui-scale));
     }
     .header-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.22);
       color: #ffffff;
-      padding: 4px 10px;
+      padding: calc(4px * var(--ui-scale)) calc(12px * var(--ui-scale));
       font-family: inherit;
-      font-size: 0.74rem;
+      font-size: calc(0.92rem * var(--ui-scale));
       font-weight: 700;
       cursor: pointer;
       line-height: 1.2;
@@ -266,24 +246,25 @@
     }
 
     .taskbar-clock-section {
-      width: 370px;
-      height: var(--header-height);
+      width: calc(500px * var(--ui-scale));
+      height: calc(64px * var(--ui-scale));
+      min-height: 32px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-end;
-      padding-right: 20px;
+      padding-right: calc(24px * var(--ui-scale));
     }
     .clock-label {
-      font-size: 0.72rem;
+      font-size: calc(0.85rem * var(--ui-scale));
       color: var(--accent-gray);
       font-weight: 600;
       letter-spacing: 1.2px;
       line-height: 1;
-      margin-bottom: 4px;
+      margin-bottom: calc(4px * var(--ui-scale));
     }
     .clock-display {
-      font-size: 1.35rem;
+      font-size: calc(1.65rem * var(--ui-scale));
       font-weight: 600;
       letter-spacing: 1.2px;
       color: #ffffff;
@@ -291,38 +272,38 @@
       font-variant-numeric: tabular-nums;
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: calc(10px * var(--ui-scale));
     }
     .clock-day-tag {
-      font-size: 0.82rem;
+      font-size: calc(1rem * var(--ui-scale));
       font-weight: 700;
       color: #00cc66;
       background: rgba(0, 204, 102, 0.12);
       border: 1px solid rgba(0, 204, 102, 0.35);
-      padding: 2px 7px;
+      padding: calc(2px * var(--ui-scale)) calc(8px * var(--ui-scale));
     }
 
     /* 2. TELEMETRY PANEL */
     .chrono-telemetry-panel {
-      width: calc(100% - 32px);
+      width: 82vw;
       max-width: var(--viewport-max-width);
-      margin: 0 auto var(--section-gap) auto;
+      margin: 0 auto calc(16px * var(--ui-scale)) auto;
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
+      gap: calc(16px * var(--ui-scale));
       flex-shrink: 0;
     }
     .telemetry-card {
       background: var(--telemetry-bg);
       border: 1px solid var(--telemetry-border);
       box-shadow: var(--window-shadow);
-      padding: 10px 14px;
+      padding: calc(12px * var(--ui-scale)) calc(16px * var(--ui-scale));
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: calc(14px * var(--ui-scale));
       position: relative;
       overflow: hidden;
-      clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+      clip-path: polygon(calc(8px * var(--ui-scale)) 0, 100% 0, 100% calc(100% - calc(8px * var(--ui-scale))), calc(100% - calc(8px * var(--ui-scale))) 100%, 0 100%, 0 calc(8px * var(--ui-scale)));
     }
     .telemetry-card::after {
       content: '';
@@ -335,7 +316,7 @@
       transition: width 0.3s ease;
     }
     .telemetry-card::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 20px; height: 3px;
+      content: ''; position: absolute; top: 0; left: 0; width: calc(26px * var(--ui-scale)); height: calc(3.5px * var(--ui-scale));
       background: var(--telemetry-accent);
       z-index: 3;
     }
@@ -345,8 +326,8 @@
     }
 
     .gauge-svg-container {
-      width: var(--gauge-size);
-      height: var(--gauge-size);
+      width: calc(68px * var(--ui-scale));
+      height: calc(68px * var(--ui-scale));
       flex-shrink: 0;
     }
     .gauge-svg {
@@ -359,72 +340,111 @@
       fill: none; stroke: var(--gauge-fill); stroke-width: 3.2;
       stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100;
     }
-    .gauge-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .gauge-info { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden;
+      min-width: 0;
+    }
     .gauge-header {
-      display: flex; justify-content: space-between; align-items: baseline;
-      font-size: 0.75rem; font-weight: 700; color: var(--accent-gray); margin-bottom: 2px;
+      display: flex; 
+      justify-content: space-between; 
+      align-items: baseline;
+      font-size: calc(0.88rem * var(--ui-scale)); 
+      font-weight: 700; 
+      color: var(--accent-gray); 
+      margin-bottom: calc(2px * var(--ui-scale));
+      gap: 4px;
+    }
+    .gauge-header > span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gauge-header-right {
+      font-size: calc(0.84rem * var(--ui-scale));
+      font-weight: 600;
+      color: var(--accent-gray);
+      margin-left: auto;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .gauge-value-main {
-      font-size: 1.3rem; font-weight: 800; line-height: 1.1; color: var(--text-main);
+      font-size: calc(1.65rem * var(--ui-scale)); 
+      font-weight: 700; 
+      line-height: 1.15; 
+      color: var(--text-main);
+      white-space: nowrap;
     }
     .gauge-sub-label {
-      font-size: 0.72rem; color: var(--text-sub); font-weight: 500; margin-top: 3px;
+      font-size: calc(0.8rem * var(--ui-scale)); 
+      color: var(--text-sub); 
+      font-weight: 500; 
+      margin-top: calc(3px * var(--ui-scale));
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .week-fraction-main { font-size: 1.3rem; font-weight: 800; color: var(--text-main); }
+    .week-fraction-main { 
+      font-size: calc(1.65rem * var(--ui-scale)); 
+      font-weight: 700; 
+      color: var(--text-main); 
+    }
 
     /* 3. CONTROL BAR */
     .screen-control-bar {
-      width: calc(100% - 32px);
+      width: 82vw;
       max-width: var(--viewport-max-width);
-      margin: 0 auto var(--section-gap) auto;
+      margin: 0 auto calc(16px * var(--ui-scale)) auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: var(--bg-window);
       border: 1px solid var(--window-border);
       box-shadow: var(--window-shadow);
-      padding: 10px 18px;
+      padding: calc(12px * var(--ui-scale)) calc(22px * var(--ui-scale));
       transition: background 0.15s ease;
       flex-shrink: 0;
     }
     .screen-control-bar.is-past { background: var(--control-bar-past); }
     .screen-control-bar.is-future { background: var(--control-bar-future); }
 
-    .target-date-group { display: flex; align-items: center; gap: 14px; }
-    .target-date { font-size: 1.45rem; font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
+    .target-date-group { display: flex; align-items: center; gap: calc(16px * var(--ui-scale)); }
+    .target-date { font-size: calc(1.85rem * var(--ui-scale)); font-weight: 800; line-height: 1; letter-spacing: -0.5px; }
     .mode-switch-btn {
       background: transparent;
       border: 1px solid var(--window-border);
       color: var(--text-sub);
       font-family: inherit;
-      font-size: 0.8rem;
+      font-size: calc(0.95rem * var(--ui-scale));
       font-weight: 700;
-      padding: 5px 12px;
+      padding: calc(5px * var(--ui-scale)) calc(12px * var(--ui-scale));
       cursor: pointer;
       letter-spacing: 0.5px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: calc(8px * var(--ui-scale));
     }
     .mode-switch-btn:hover { background: var(--bar-header); color: #ffffff; }
-    .mode-switch-btn .mode-tag { color: #00cc66; font-size: 0.74rem; }
+    .mode-switch-btn .mode-tag { color: #00cc66; font-size: calc(0.88rem * var(--ui-scale)); }
     
-    .nav-actions { display: flex; gap: 10px; align-items: center; }
+    .nav-actions { display: flex; gap: calc(10px * var(--ui-scale)); align-items: center; }
     .tac-btn {
       background: var(--bg-window);
       border: 1px solid var(--window-border);
       box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-      padding: 6px 14px;
-      font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      padding: calc(7px * var(--ui-scale)) calc(16px * var(--ui-scale));
+      font-family: inherit; font-size: calc(0.95rem * var(--ui-scale)); font-weight: 700;
       cursor: pointer; color: var(--text-main);
     }
     .tac-btn:hover { background: var(--bar-header); color: #ffffff; }
 
     /* 4. TACTICAL VIEWPORT */
     .tactical-viewport {
-      width: calc(100% - 32px);
+      width: 82vw;
       max-width: var(--viewport-max-width);
-      margin: 0 auto;
+      margin: 0 auto calc(42px * var(--ui-scale)) auto;
       flex: 1;
       min-height: 0;
       display: flex;
@@ -449,35 +469,36 @@
       background: var(--bar-header);
       color: var(--bar-header-text);
       border-bottom: 1px solid var(--window-border);
-      padding: 8px 12px;
+      padding: calc(9px * var(--ui-scale)) calc(14px * var(--ui-scale));
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.82rem;
+      font-size: calc(0.95rem * var(--ui-scale));
       font-weight: 700;
       letter-spacing: 0.4px;
       flex-shrink: 0;
     }
     .tac-win-btn {
-      width: 10px; height: 10px; border: 1px solid rgba(255, 255, 255, 0.25);
+      width: calc(12px * var(--ui-scale)); height: calc(12px * var(--ui-scale)); border: 1px solid rgba(255, 255, 255, 0.25);
       background: rgba(255, 255, 255, 0.15); display: inline-block;
     }
 
     /* 月表示 */
     .month-multi-windows { 
       display: flex; 
-      gap: 16px; 
+      gap: calc(18px * var(--ui-scale)); 
       width: 100%; 
       height: 100%;
       min-height: 0;
       align-items: stretch; 
     }
     .side-windows-column { 
-      width: var(--side-window-width); 
+      width: 22.5%; 
+      min-width: calc(260px * var(--ui-scale));
       flex-shrink: 0; 
       display: flex; 
       flex-direction: column; 
-      gap: 12px; 
+      gap: calc(14px * var(--ui-scale)); 
       min-height: 0;
     }
     .side-windows-column .tac-window {
@@ -486,7 +507,7 @@
     }
     .main-window-column { 
       flex: 1; 
-      min-width: 540px; 
+      min-width: calc(520px * var(--ui-scale)); 
       display: flex;
       flex-direction: column;
       min-height: 0;
@@ -502,18 +523,18 @@
       min-height: 0;
       display: grid; 
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: 30px repeat(6, 1fr);
+      grid-template-rows: calc(32px * var(--ui-scale)) repeat(6, 1fr);
       background: var(--grid-line); gap: 1px;
     }
     .main-calendar-matrix .matrix-th {
       background: var(--th-bg); color: var(--th-text);
-      font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      font-size: calc(0.92rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
     }
     .main-calendar-matrix .matrix-th.weekend {
       background: var(--th-weekend-bg); color: var(--th-weekend-text);
     }
     .main-calendar-matrix .matrix-cell {
-      background: var(--bg-window); padding: 6px 10px;
+      background: var(--bg-window); padding: calc(6px * var(--ui-scale)) calc(12px * var(--ui-scale));
       display: flex; flex-direction: column; justify-content: space-between; position: relative;
       min-height: 0;
       overflow: hidden;
@@ -523,7 +544,7 @@
     .main-calendar-matrix .day-num-wrap { display: flex; align-items: center; gap: 4px; }
     
     .main-calendar-matrix .day-num {
-      font-size: var(--day-num-size);
+      font-size: calc(2.6rem * var(--ui-scale));
       font-weight: 400;
       letter-spacing: -0.05em;
       line-height: 1;
@@ -548,18 +569,18 @@
     .main-calendar-matrix .matrix-cell.is-today::before {
       content: '';
       position: absolute;
-      top: calc(-1 * var(--today-float-offset));
-      left: calc(-1 * var(--today-float-offset));
-      right: var(--today-float-offset);
-      bottom: var(--today-float-offset);
+      top: calc(-1 * var(--today-float-offset, 0.5em));
+      left: calc(-1 * var(--today-float-offset, 0.5em));
+      right: var(--today-float-offset, 0.5em);
+      bottom: var(--today-float-offset, 0.5em);
       background: var(--bg-window);
       border: 1px solid var(--today-cell-border);
-      box-shadow: 14px 18px 32px rgba(15, 23, 42, 0.18), 32px 42px 72px -4px rgba(15, 23, 42, 0.28);
+      box-shadow: calc(14px * var(--ui-scale)) calc(18px * var(--ui-scale)) calc(32px * var(--ui-scale)) rgba(15, 23, 42, 0.18), calc(32px * var(--ui-scale)) calc(42px * var(--ui-scale)) calc(72px * var(--ui-scale)) rgba(15, 23, 42, 0.28);
       z-index: 1;
       pointer-events: none;
     }
     [data-theme="dark"] .main-calendar-matrix .matrix-cell.is-today::before {
-      box-shadow: 14px 18px 36px rgba(0, 0, 0, 0.85), 32px 46px 80px rgba(0, 0, 0, 0.95);
+      box-shadow: calc(14px * var(--ui-scale)) calc(18px * var(--ui-scale)) calc(36px * var(--ui-scale)) rgba(0, 0, 0, 0.85), calc(32px * var(--ui-scale)) calc(46px * var(--ui-scale)) calc(80px * var(--ui-scale)) rgba(0, 0, 0, 0.95);
     }
     .main-calendar-matrix .matrix-cell.is-today > * {
       position: relative;
@@ -568,12 +589,12 @@
     .main-calendar-matrix .matrix-cell.is-today .cell-header,
     .main-calendar-matrix .matrix-cell.is-today .moon-svg-badge,
     .main-calendar-matrix .matrix-cell.is-today .solar-telemetry-bg {
-      transform: translate(calc(-1 * var(--today-float-offset)), calc(-1 * var(--today-float-offset)));
+      transform: translate(calc(-1 * var(--today-float-offset, 0.5em)), calc(-1 * var(--today-float-offset, 0.5em)));
     }
     .main-calendar-matrix .matrix-cell.is-today .day-num {
       background: var(--today-badge-bg);
       color: var(--today-badge-text) !important;
-      padding: 2px 6px;
+      padding: calc(2px * var(--ui-scale)) calc(7px * var(--ui-scale));
       font-weight: 700;
       border-radius: 2px;
     }
@@ -597,7 +618,7 @@
     }
 
     .main-calendar-matrix .cell-tag {
-      font-size: 0.8rem;
+      font-size: calc(0.92rem * var(--ui-scale));
       font-weight: 700;
       color: var(--accent-gray);
       background: transparent;
@@ -609,33 +630,33 @@
 
     .moon-svg-badge {
       position: absolute;
-      bottom: 6px;
-      right: 8px;
+      bottom: calc(6px * var(--ui-scale));
+      right: calc(8px * var(--ui-scale));
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: calc(5px * var(--ui-scale));
       background: var(--moon-badge-bg);
       color: var(--moon-badge-text);
-      padding: 3px 6px;
+      padding: calc(3px * var(--ui-scale)) calc(7px * var(--ui-scale));
       border-radius: 2px;
-      font-size: 0.74rem;
+      font-size: calc(0.85rem * var(--ui-scale));
       font-weight: 700;
       letter-spacing: -0.2px;
       user-select: none;
       z-index: 4;
     }
     .moon-svg-container {
-      width: var(--moon-icon-size);
-      height: var(--moon-icon-size);
+      width: calc(24px * var(--ui-scale));
+      height: calc(24px * var(--ui-scale));
       flex-shrink: 0;
     }
 
     .moon-svg-pip {
       position: absolute;
-      bottom: 4px;
-      right: 4px;
-      width: var(--moon-pip-size);
-      height: var(--moon-pip-size);
+      bottom: calc(4px * var(--ui-scale));
+      right: calc(4px * var(--ui-scale));
+      width: calc(16px * var(--ui-scale));
+      height: calc(16px * var(--ui-scale));
       pointer-events: none;
       z-index: 4;
     }
@@ -644,12 +665,12 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      padding: 8px 12px;
+      gap: calc(18px * var(--ui-scale));
+      padding: calc(9px * var(--ui-scale)) calc(14px * var(--ui-scale));
       background: var(--bg-window);
       border: 1px solid var(--window-border);
       box-shadow: var(--window-shadow);
-      font-size: 0.76rem;
+      font-size: calc(0.88rem * var(--ui-scale));
       font-weight: 700;
       letter-spacing: 0.5px;
       color: var(--text-main);
@@ -657,24 +678,19 @@
       width: 100%;
       flex-shrink: 0;
     }
-    .legend-inline-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-inline-item { display: inline-flex; align-items: center; gap: calc(6px * var(--ui-scale)); }
     .legend-svg-static {
-      width: var(--moon-icon-size);
-      height: var(--moon-icon-size);
+      width: calc(22px * var(--ui-scale));
+      height: calc(22px * var(--ui-scale));
       display: inline-block;
       flex-shrink: 0;
     }
     .legend-inline-divider { color: var(--accent-gray); opacity: 0.6; }
-    .year-legend-container {
-      width: var(--side-window-width);
-      margin-top: 10px;
-      flex-shrink: 0;
-    }
 
     .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
     .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
     .main-calendar-matrix .holiday-title {
-      font-size: 0.76rem; font-weight: 700; color: var(--holiday-text);
+      font-size: calc(0.88rem * var(--ui-scale)); font-weight: 700; color: var(--holiday-text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
@@ -684,23 +700,23 @@
       min-height: 0;
       display: grid; 
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: 24px repeat(6, 1fr);
+      grid-template-rows: calc(26px * var(--ui-scale)) repeat(6, 1fr);
       background: var(--grid-line); 
       gap: 1px;
     }
     .sub-calendar-matrix .matrix-th {
       background: var(--sub-th-bg); color: var(--th-text);
-      font-size: 0.74rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
     }
     .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
     .sub-calendar-matrix .matrix-cell {
-      background: var(--bg-window); padding: 3px 5px;
+      background: var(--bg-window); padding: calc(3px * var(--ui-scale)) calc(5px * var(--ui-scale));
       display: flex; align-items: flex-start; justify-content: flex-start;
       position: relative;
       min-height: 0;
     }
     .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
-    .sub-calendar-matrix .day-num { font-size: 1.1rem; font-weight: 400; line-height: 1; }
+    .sub-calendar-matrix .day-num { font-size: calc(1.3rem * var(--ui-scale)); font-weight: 400; line-height: 1; }
 
     .sub-calendar-matrix .matrix-cell.is-today,
     .year-month-window .matrix-cell.is-today {
@@ -740,7 +756,7 @@
       display: grid; 
       grid-template-columns: repeat(4, 1fr); 
       grid-template-rows: repeat(3, 1fr);
-      gap: 12px; 
+      gap: calc(14px * var(--ui-scale)); 
       width: 100%; 
       height: 100%;
       min-height: 0;
@@ -756,36 +772,44 @@
       min-height: 0;
       display: grid; 
       grid-template-columns: repeat(7, 1fr);
-      grid-template-rows: 22px repeat(6, 1fr); 
+      grid-template-rows: calc(24px * var(--ui-scale)) repeat(6, 1fr); 
       background: var(--grid-line); gap: 1px;
     }
     .year-month-window .matrix-th {
       background: var(--th-bg); color: var(--th-text);
-      font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; display: flex; align-items: center; justify-content: center;
     }
     .year-month-window .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
     .year-month-window .matrix-cell {
       background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start;
-      padding: 2px 4px;
+      padding: calc(2px * var(--ui-scale)) calc(4px * var(--ui-scale));
       position: relative;
       min-height: 0;
     }
     .year-month-window .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.3; }
-    .year-month-window .day-num { font-size: 0.78rem; font-weight: 600; }
+    .year-month-window .day-num { font-size: calc(0.92rem * var(--ui-scale)); font-weight: 600; }
 
     /* 5. BOTTOM TASKBAR */
     .screen-bottom-taskbar {
-      width: 100%; height: var(--footer-height); margin-top: var(--section-gap);
-      background: var(--bar-footer); color: var(--bar-footer-text);
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 20px; font-size: 0.76rem; font-weight: 600; border-top: 1px solid var(--window-border);
+      width: 100%;
+      height: calc(44px * var(--ui-scale));
+      min-height: 28px;
+      background: var(--bar-footer);
+      color: var(--bar-footer-text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 calc(24px * var(--ui-scale));
+      font-size: calc(0.88rem * var(--ui-scale));
+      font-weight: 600;
+      border-top: 1px solid var(--window-border);
       flex-shrink: 0;
     }
     .footer-left-status { color: #00cc66; font-weight: 700; }
-    .footer-right-status { display: flex; gap: 20px; align-items: center; }
+    .footer-right-status { display: flex; gap: calc(24px * var(--ui-scale)); align-items: center; }
     .debug-toggle-btn {
       background: transparent; border: none; color: var(--bar-footer-text);
-      font-family: inherit; font-size: 0.74rem; font-weight: 700; cursor: pointer; opacity: 0.6;
+      font-family: inherit; font-size: calc(0.82rem * var(--ui-scale)); font-weight: 700; cursor: pointer; opacity: 0.6;
     }
     .debug-toggle-btn:hover { opacity: 1; color: #00cc66; }
 
@@ -896,8 +920,11 @@
         </svg>
       </div>
       <div class="gauge-info">
-        <div class="gauge-header"><span>DAY_PROGRESS</span><span id="gauge-day-rem">--:-- REMAIN</span></div>
-        <div class="gauge-value-main"><span id="gauge-day-val">00.0</span><span style="font-size: 0.8rem; color: var(--accent-gray); margin-left: 2px;">%</span></div>
+        <div class="gauge-header">
+          <span>DAY_PROGRESS</span>
+          <span id="gauge-day-rem" class="gauge-header-right">-04:55 REMAIN</span>
+        </div>
+        <div class="gauge-value-main"><span id="gauge-day-val">79.5</span><span style="font-size: 0.55em; color: var(--accent-gray); margin-left: 2px;">%</span></div>
         <div class="gauge-sub-label">DIURNAL CYCLE</div>
       </div>
     </div>
@@ -911,8 +938,11 @@
         </svg>
       </div>
       <div class="gauge-info">
-        <div class="gauge-header"><span>MONTH_PROGRESS</span><span id="gauge-month-days">--/-- DAYS</span></div>
-        <div class="gauge-value-main"><span id="gauge-month-val">00.0</span><span style="font-size: 0.8rem; color: var(--accent-gray); margin-left: 2px;">%</span></div>
+        <div class="gauge-header">
+          <span>MONTH_PROGRESS</span>
+          <span id="gauge-month-days" class="gauge-header-right">17/31 DAYS</span>
+        </div>
+        <div class="gauge-value-main"><span id="gauge-month-val">54.2</span><span style="font-size: 0.55em; color: var(--accent-gray); margin-left: 2px;">%</span></div>
         <div class="gauge-sub-label">LUNAR/SOLAR CYCLE</div>
       </div>
     </div>
@@ -926,8 +956,11 @@
         </svg>
       </div>
       <div class="gauge-info">
-        <div class="gauge-header"><span>YEAR_PROGRESS</span><span id="gauge-year-days">---/--- DAYS</span></div>
-        <div class="gauge-value-main"><span id="gauge-year-val">00.0</span><span style="font-size: 0.8rem; color: var(--accent-gray); margin-left: 2px;">%</span></div>
+        <div class="gauge-header">
+          <span>YEAR_PROGRESS</span>
+          <span id="gauge-year-days" class="gauge-header-right">229/365 DAYS</span>
+        </div>
+        <div class="gauge-value-main"><span id="gauge-year-val">62.7</span><span style="font-size: 0.55em; color: var(--accent-gray); margin-left: 2px;">%</span></div>
         <div class="gauge-sub-label">ANNUAL ORBIT VECTOR</div>
       </div>
     </div>
@@ -941,19 +974,22 @@
         </svg>
       </div>
       <div class="gauge-info">
-        <div class="gauge-header"><span>WEEK_CYCLE // ISO</span><span id="week-rate-percent">00.0%</span></div>
+        <div class="gauge-header">
+          <span>WEEK_CYCLE // ISO</span>
+          <span id="week-rate-percent" class="gauge-header-right">64.2%</span>
+        </div>
         <div style="display: flex; align-items: baseline; gap: 2px;">
-          <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-gray); margin-right: 3px;">W-</span>
-          <span id="week-current-val" class="week-fraction-main">00</span>
-          <span style="font-size: 0.95rem; color: var(--accent-gray); font-weight: 700;">/</span>
-          <span id="week-total-val" style="font-size: 0.95rem; color: var(--text-sub); font-weight: 700;">00</span>
-          <span style="font-size: 0.72rem; font-weight: 700; color: var(--accent-gray); margin-left: 4px;">WEEKS</span>
+          <span style="font-size: 0.6em; font-weight: 700; color: var(--accent-gray); margin-right: 2px;">W-</span>
+          <span id="week-current-val" class="week-fraction-main">34</span>
+          <span style="font-size: 0.65em; color: var(--accent-gray); font-weight: 700;">/</span>
+          <span id="week-total-val" style="font-size: 0.65em; color: var(--text-sub); font-weight: 700;">53</span>
+          <span style="font-size: 0.5em; font-weight: 700; color: var(--accent-gray); margin-left: 4px;">WEEKS</span>
         </div>
         <div class="gauge-sub-label">ANNUAL ISO WEEK</div>
       </div>
     </div>
 
-    <!-- 5. LUNAR_PHASE -->
+    <!-- 5. LUNAR_PHASE (月齢アイコンなし) -->
     <div id="card-moon" class="telemetry-card">
       <div class="gauge-svg-container">
         <svg class="gauge-svg" viewBox="0 0 36 36">
@@ -962,12 +998,15 @@
         </svg>
       </div>
       <div class="gauge-info">
-        <div class="gauge-header"><span>LUNAR_PHASE</span><span id="moon-phase-icon" style="display:inline-flex; width:var(--moon-icon-size); height:var(--moon-icon-size); vertical-align:middle;"></span></div>
-        <div class="gauge-value-main">
-          <span style="font-size: 0.8rem; color: var(--accent-gray); margin-right: 3px;">AGE</span>
-          <span id="gauge-moon-age">00.0</span>
+        <div class="gauge-header">
+          <span>LUNAR_PHASE</span>
+          <span class="gauge-header-right">CYCLE 29.5D</span>
         </div>
-        <div class="gauge-sub-label" id="gauge-moon-name">NEW MOON</div>
+        <div class="gauge-value-main">
+          <span style="font-size: 0.55em; color: var(--accent-gray); margin-right: 3px;">AGE</span>
+          <span id="gauge-moon-age">4.2</span>
+        </div>
+        <div class="gauge-sub-label" id="gauge-moon-name">WAXING CRESCENT</div>
       </div>
     </div>
   </section>
@@ -994,7 +1033,7 @@
   <footer class="screen-bottom-taskbar">
     <div class="footer-left-status" id="api-status">API: CONNECTING...</div>
     <div class="footer-right-status">
-      <div id="grid-status">LAYOUT: 3-WINDOW TACTICAL</div>
+      <div id="grid-status">LAYOUT: 3-WINDOW TACTICAL (30% PREV/NEXT | 70% MAIN)</div>
       <div id="holiday-count">LOADED_HOLIDAYS: --</div>
       <button id="debug-trigger" class="debug-toggle-btn" type="button">[DBG]</button>
     </div>
@@ -1128,7 +1167,6 @@
       const gaugeMoonCircle = document.getElementById('gauge-moon-circle');
       const gaugeMoonAge = document.getElementById('gauge-moon-age');
       const gaugeMoonName = document.getElementById('gauge-moon-name');
-      const moonPhaseIcon = document.getElementById('moon-phase-icon');
 
       const cardDay = document.getElementById('card-day');
       const cardMonth = document.getElementById('card-month');
@@ -1611,7 +1649,6 @@
         gaugeMoonAge.textContent = moonAge.toFixed(1);
         cardMoon.style.setProperty('--card-progress', `${moonPct.toFixed(1)}%`);
         gaugeMoonName.textContent = moonPhaseInfo.name;
-        moonPhaseIcon.innerHTML = `<span class="moon-svg-container" style="display:inline-block;">${buildMoonSvgHtml(getMoonIllumination(moonAge))}</span>`;
 
         const todayCell = document.querySelector('.main-calendar-matrix .matrix-cell.is-today');
         if (todayCell) {
@@ -1706,13 +1743,24 @@
       setInterval(updateLiveClock, 1000);
       updateLiveClock();
 
+      const detectDefaultSize = () => {
+        const w = window.innerWidth;
+        if (w >= 2400) return '4k';
+        if (w >= 1800) return 'wqhd';
+        return 'fhd';
+      };
+
       const syncStateFromUrl = () => {
         const params = new URLSearchParams(window.location.search);
         currentTheme = params.get('theme') === 'dark' ? 'dark' : 'light';
         applyTheme(currentTheme, false);
 
         const paramSize = (params.get('size') || '').toLowerCase();
-        currentSize = ['fhd', 'wqhd', '4k'].includes(paramSize) ? paramSize : 'fhd';
+        if (['fhd', 'wqhd', '4k'].includes(paramSize)) {
+          currentSize = paramSize;
+        } else {
+          currentSize = detectDefaultSize();
+        }
         applySize(currentSize, false);
 
         viewMode = params.get('view') === 'year' ? 'YEAR' : 'MONTH';
@@ -1756,7 +1804,7 @@
         document.documentElement.setAttribute('data-size', size);
         headerSizeBtn.textContent = `SCALE: ${size.toUpperCase()}`;
 
-        const sizeOffsets = { fhd: '0.45', wqhd: '0.5', '4k': '0.6' };
+        const sizeOffsets = { fhd: '0.42', wqhd: '0.5', '4k': '0.6' };
         if (rangeOffset) {
           rangeOffset.value = sizeOffsets[size];
           valOffset.textContent = sizeOffsets[size] + 'em';
@@ -1905,7 +1953,7 @@
           if (isToday) {
             const moonIllum = getMoonIllumination(getMoonAge(activeToday));
             cellTagContent = `
-              <span style="width:var(--today-icon-size); height:var(--today-icon-size); display:inline-block; vertical-align:middle;">${buildMoonSvgHtml(moonIllum)}</span>
+              <span style="width:calc(26px * var(--ui-scale)); height:calc(26px * var(--ui-scale)); display:inline-block; vertical-align:middle;">${buildMoonSvgHtml(moonIllum)}</span>
             `;
           } else if (isPast) {
             cellTagLabel = 'LOG';
@@ -1981,7 +2029,7 @@
           <span>// MONTH_CYCLE</span>
           <span class="mode-tag">[SWITCH: YEAR]</span>
         `;
-        gridStatusEl.textContent = 'LAYOUT: 3-WINDOW TACTICAL (PREV/NEXT + MAIN)';
+        gridStatusEl.textContent = 'LAYOUT: 3-WINDOW TACTICAL (30% PREV/NEXT | 70% MAIN)';
 
         updateControlBarState();
 
