@@ -10,7 +10,7 @@
   <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22CB%20Tactical%20Operation%20Terminal%22%2C%22short_name%22%3A%22CB-Tactical%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2306090d%22%2C%22theme_color%22%3A%22%231a222a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20fill%3D%27%231a222a%27%2F%3E%3Ccircle%20cx%3D%27256%27%20cy%3D%27256%27%20r%3D%2796%27%20fill%3D%27none%27%20stroke%3D%27%2300cc66%27%20stroke-width%3D%2748%27%2F%3E%3Ccircle%20cx%3D%27256%27%20cy%3D%27256%27%20r%3D%2724%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%5D%7D">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
   <!-- 標準天体位置推算エンジン -->
   <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
   <style>
@@ -87,6 +87,7 @@
       --cell-day-font-size: 2.0rem;
       --sub-cell-day-font-size: 1.0rem;
       --year-cell-day-font-size: 0.85rem;
+      --cell-day-font-weight: 400;
     }
 
     [data-theme="dark"] {
@@ -302,7 +303,6 @@
       position: relative;
     }
 
-    /* 改善: 点滅が見えづらい問題を修正し、視認性の高いダイナミックブレスに変更 */
     @keyframes shadowBreathPulse {
       0% { color: var(--text-main); text-shadow: 0 0 2px rgba(0, 204, 102, 0.2); opacity: 0.7; }
       50% { color: var(--telemetry-accent); text-shadow: 0 0 12px rgba(0, 204, 102, 0.8), 0 0 24px rgba(0, 204, 102, 0.4); opacity: 1; }
@@ -326,7 +326,6 @@
 
     .telemetry-card.is-dimmed { opacity: 0.35; }
 
-    /* 改善: 拡大サイズを1.7倍程度に調整 (ホログラムポップアップ) */
     .hologram-popup-overlay {
       position: fixed !important;
       z-index: 99999 !important;
@@ -512,8 +511,8 @@
     .main-calendar-matrix .cell-header { display: flex; justify-content: space-between; align-items: flex-start; }
     .main-calendar-matrix .day-num-wrap { display: flex; align-items: center; gap: 4px; }
     
-    .main-calendar-matrix .day-num { font-size: var(--cell-day-font-size); font-weight: 400; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
-    .main-calendar-matrix .matrix-cell.is-past .day-num { color: var(--past-badge-text) !important; font-weight: 400; }
+    .main-calendar-matrix .day-num { font-size: var(--cell-day-font-size); font-weight: var(--cell-day-font-weight); letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+    .main-calendar-matrix .matrix-cell.is-past .day-num { color: var(--past-badge-text) !important; }
     .main-calendar-matrix .matrix-cell.is-past .cell-tag { opacity: 0.75; }
 
     /* 当日セル */
@@ -563,7 +562,7 @@
     .legend-inline-divider { color: var(--accent-gray); opacity: 0.6; }
 
     .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
-    .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
+    .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; }
     
     .main-calendar-matrix .holiday-title {
       font-size: 0.65rem; font-weight: 700; color: var(--holiday-text);
@@ -581,9 +580,9 @@
     }
     .sub-calendar-matrix .matrix-th { background: var(--sub-th-bg); color: var(--th-text); font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
     .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
-    .sub-calendar-matrix .matrix-cell { background: var(--bg-window); padding: 2px 4px; display: flex; align-items: flex-start; justify-content: flex-start; position: relative; min-height: 0; }
+    .sub-calendar-matrix .matrix-cell { background: var(--bg-window); padding: 2px 4px; display: flex; align-items: flex-start; justify-content: flex-start; position: relative; min-height: 0; overflow: hidden; }
     .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
-    .sub-calendar-matrix .day-num { font-size: var(--sub-cell-day-font-size); font-weight: 400; line-height: 1; }
+    .sub-calendar-matrix .day-num { font-size: var(--sub-cell-day-font-size); font-weight: var(--cell-day-font-weight); line-height: 1; }
 
     .sub-calendar-matrix .matrix-cell.is-today,
     .year-month-window .matrix-cell.is-today { position: relative; z-index: 6; background: var(--bg-window) !important; }
@@ -611,7 +610,7 @@
     .year-month-window .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
     .year-month-window .matrix-cell { background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 4px; position: relative; min-height: 0; }
     .year-month-window .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.3; }
-    .year-month-window .day-num { font-size: var(--year-cell-day-font-size); font-weight: 600; }
+    .year-month-window .day-num { font-size: var(--year-cell-day-font-size); font-weight: var(--cell-day-font-weight); }
 
     /* 5. BOTTOM TASKBAR */
     .screen-bottom-taskbar {
@@ -889,7 +888,7 @@
         </div>
       </div>
 
-      <!-- フォントサイズの設定 -->
+      <!-- フォントサイズ & ウェイトの設定 -->
       <div class="os-win-row">
         <label>MAIN_CELL_FONT_SIZE</label>
         <div style="display:flex; align-items:center; gap:6px; width:180px;">
@@ -909,6 +908,13 @@
         <div style="display:flex; align-items:center; gap:6px; width:180px;">
           <input type="range" id="cfg-range-year-font" min="0.5" max="1.5" step="0.05" value="0.85" style="flex:1;">
           <span id="cfg-val-year-font" style="font-weight:700; width:44px; text-align:right;">0.85rem</span>
+        </div>
+      </div>
+      <div class="os-win-row">
+        <label>CELL_DAY_FONT_WEIGHT</label>
+        <div style="display:flex; align-items:center; gap:6px; width:180px;">
+          <input type="range" id="cfg-range-font-weight" min="100" max="900" step="100" value="400" style="flex:1;">
+          <span id="cfg-val-font-weight" style="font-weight:700; width:44px; text-align:right;">400</span>
         </div>
       </div>
       
@@ -983,7 +989,8 @@
         <button id="cfg-export-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">EXPORT JSON</button>
         <button id="cfg-import-btn" class="tac-btn" type="button" style="flex:1; text-align:center;">IMPORT JSON</button>
       </div>
-      <textarea id="cfg-json-area" placeholder="JSON configuration stream..." style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:6px; font-family:inherit; font-size:0.72rem; width:100%; height:90px; resize:vertical; display:block; margin-top:4px;"></textarea>
+      <!-- 修正: テキストエリアの高さを180pxに固定確保し、flex-shrink:0で潰れないように改善 -->
+      <textarea id="cfg-json-area" placeholder="JSON configuration stream..." style="background:var(--bg-screen); border:1px solid var(--window-border); color:var(--text-main); padding:8px; font-family:inherit; font-size:0.75rem; width:100%; height:180px; min-height:100px; resize:vertical; display:block; margin-top:6px; flex-shrink:0;"></textarea>
       <button id="cfg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center; color:#ff7766;">RESET TO DEFAULT</button>
     </div>
   </div>
@@ -1124,6 +1131,8 @@
       const cfgValSubFont = document.getElementById('cfg-val-sub-font');
       const cfgRangeYearFont = document.getElementById('cfg-range-year-font');
       const cfgValYearFont = document.getElementById('cfg-val-year-font');
+      const cfgRangeFontWeight = document.getElementById('cfg-range-font-weight');
+      const cfgValFontWeight = document.getElementById('cfg-val-font-weight');
 
       const cfgRangeHeader = document.getElementById('cfg-range-header');
       const cfgValHeader = document.getElementById('cfg-val-header');
@@ -1180,6 +1189,11 @@
           cfgValYearFont.textContent = Number(config.yearFont).toFixed(2) + 'rem';
           document.documentElement.style.setProperty('--year-cell-day-font-size', config.yearFont + 'rem');
         }
+        if (config.fontWeight !== undefined) {
+          cfgRangeFontWeight.value = config.fontWeight;
+          cfgValFontWeight.textContent = config.fontWeight;
+          document.documentElement.style.setProperty('--cell-day-font-weight', config.fontWeight);
+        }
         if (config.headerScale !== undefined) {
           cfgRangeHeader.value = config.headerScale;
           cfgValHeader.textContent = Number(config.headerScale).toFixed(1) + 'x';
@@ -1223,6 +1237,7 @@
         dayFont: cfgRangeDayFont.value,
         subFont: cfgRangeSubFont.value,
         yearFont: cfgRangeYearFont.value,
+        fontWeight: cfgRangeFontWeight.value,
         headerScale: cfgRangeHeader.value,
         telemetryScale: cfgRangeTelemetry.value,
         ctrlScale: cfgRangeCtrl.value,
@@ -1238,6 +1253,7 @@
       cfgRangeDayFont.addEventListener('input', () => applyConfigValues({ dayFont: cfgRangeDayFont.value }));
       cfgRangeSubFont.addEventListener('input', () => applyConfigValues({ subFont: cfgRangeSubFont.value }));
       cfgRangeYearFont.addEventListener('input', () => applyConfigValues({ yearFont: cfgRangeYearFont.value }));
+      cfgRangeFontWeight.addEventListener('input', () => applyConfigValues({ fontWeight: cfgRangeFontWeight.value }));
       cfgRangeHeader.addEventListener('input', () => applyConfigValues({ headerScale: cfgRangeHeader.value }));
       cfgRangeTelemetry.addEventListener('input', () => applyConfigValues({ telemetryScale: cfgRangeTelemetry.value }));
       cfgRangeCtrl.addEventListener('input', () => applyConfigValues({ ctrlScale: cfgRangeCtrl.value }));
@@ -1314,7 +1330,7 @@
 
       cfgResetBtn.addEventListener('click', () => {
         const defaultConfig = { 
-          widthVw: '82', widthPx: '1400', sideWidth: '22.5', dayFont: '2.0', subFont: '1.0', yearFont: '0.85',
+          widthVw: '82', widthPx: '1400', sideWidth: '22.5', dayFont: '2.0', subFont: '1.0', yearFont: '0.85', fontWeight: '400',
           headerScale: '1.0', telemetryScale: '1.0', ctrlScale: '1.0', footerScale: '1.0', 
           shadowAlpha: '0.08', offset: '0.45' 
         };
@@ -1962,7 +1978,8 @@
         </div>
       `;
 
-      const buildMonthMatrixHtml = (year, month, holidays, isDetailed = true) => {
+      // メインカレンダー用マトリックスビルダー（PREV/NEXTタグあり）
+      const buildMainMonthMatrixHtml = (year, month, holidays) => {
         const firstDay = new Date(year, month, 1);
         const startDayIndex = getMondayFirstDayIndex(firstDay);
         const prevMonthLastDate = new Date(year, month, 0).getDate();
@@ -2033,6 +2050,7 @@
             <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
               <div class="cell-header">
                 <div class="day-num-wrap"><span class="day-num">${String(dayVal).padStart(2, '0')}</span></div>
+                <span class="cell-tag">PREV</span>
               </div>
               ${moonBadgeHtml}
             </div>
@@ -2082,7 +2100,7 @@
           } else if (holidayName) {
             cellTagLabel = 'HLD';
             cellTagContent = cellTagLabel;
-          } else if (isDetailed) {
+          } else {
             if (cellDate > todayDateOnly) {
               cellTagLabel = 'QUE';
             }
@@ -2091,23 +2109,15 @@
 
           let moonBadgeHtml = '';
           if (moonEvent && !isToday) {
-            if (isDetailed) {
-              moonBadgeHtml = `
-                <div class="moon-svg-badge">
-                  <div class="moon-svg-container">${buildMoonSvgHtml(moonEvent.illum)}</div>
-                  <span>${moonEvent.type}</span>
-                </div>
-              `;
-            } else {
-              moonBadgeHtml = `
-                <div class="moon-svg-pip">
-                  ${buildMoonSvgHtml(moonEvent.illum)}
-                </div>
-              `;
-            }
+            moonBadgeHtml = `
+              <div class="moon-svg-badge">
+                <div class="moon-svg-container">${buildMoonSvgHtml(moonEvent.illum)}</div>
+                <span>${moonEvent.type}</span>
+              </div>
+            `;
           }
 
-          const solarBgHtml = (isDetailed && isToday) ? buildSolarSvgHtml(activeToday) : '';
+          const solarBgHtml = isToday ? buildSolarSvgHtml(activeToday) : '';
 
           cellsHtml += `
             <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
@@ -2116,9 +2126,117 @@
                 <div class="day-num-wrap">
                   <span class="day-num">${String(day).padStart(2, '0')}</span>
                 </div>
-                ${isDetailed ? `<span class="cell-tag">${cellTagContent}</span>` : ''}
+                <span class="cell-tag">${cellTagContent}</span>
               </div>
-              ${isDetailed && holidayName ? `<div class="holiday-title" title="${holidayName}">${holidayName}</div>` : ''}
+              ${holidayName ? `<div class="holiday-title" title="${holidayName}">${holidayName}</div>` : ''}
+              ${moonBadgeHtml}
+            </div>
+          `;
+        }
+
+        const remainingCells = TOTAL_CELLS - (startDayIndex + currentMonthLastDate);
+        for (let day = 1; day <= remainingCells; day++) {
+          cellsHtml += `
+            <div class="matrix-cell other-month">
+              <div class="cell-header">
+                <div class="day-num-wrap"><span class="day-num">${String(day).padStart(2, '0')}</span></div>
+                <span class="cell-tag">NEXT</span>
+              </div>
+            </div>
+          `;
+        }
+        return cellsHtml;
+      };
+
+      // サブカレンダーおよび年間表示用マトリックスビルダー（PREV/NEXTタグなし、日付のみ）
+      const buildSubMonthMatrixHtml = (year, month, holidays) => {
+        const firstDay = new Date(year, month, 1);
+        const startDayIndex = getMondayFirstDayIndex(firstDay);
+        const prevMonthLastDate = new Date(year, month, 0).getDate();
+        const currentMonthLastDate = new Date(year, month + 1, 0).getDate();
+
+        let activeToday = new Date();
+        const todayDateOnly = new Date(activeToday.getFullYear(), activeToday.getMonth(), activeToday.getDate());
+        const isCurrentYearMonth = activeToday.getFullYear() === year && activeToday.getMonth() === month;
+        const phaseMap = getMonthPhaseMap(year, month);
+
+        let cellsHtml = `
+          <div class="matrix-th">MON</div>
+          <div class="matrix-th">TUE</div>
+          <div class="matrix-th">WED</div>
+          <div class="matrix-th">THU</div>
+          <div class="matrix-th">FRI</div>
+          <div class="matrix-th weekend">SAT</div>
+          <div class="matrix-th weekend">SUN</div>
+        `;
+
+        for (let i = startDayIndex - 1; i >= 0; i--) {
+          const dayVal = prevMonthLastDate - i;
+          const prevMonth = month === 0 ? 11 : month - 1;
+          const prevYear = month === 0 ? year - 1 : year;
+          const dateKey = formatDateKey(prevYear, prevMonth, dayVal);
+          const holidayName = holidays ? holidays[dateKey] : null;
+          const moonEvent = phaseMap.get(dateKey);
+
+          const classNames = ['matrix-cell', 'other-month'];
+          if (holidayName) classNames.push('is-holiday');
+
+          let moonBadgeHtml = '';
+          if (moonEvent) {
+            moonBadgeHtml = `
+              <div class="moon-svg-pip">
+                ${buildMoonSvgHtml(moonEvent.illum)}
+              </div>
+            `;
+          }
+
+          cellsHtml += `
+            <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
+              <div class="cell-header">
+                <div class="day-num-wrap"><span class="day-num">${String(dayVal).padStart(2, '0')}</span></div>
+              </div>
+              ${moonBadgeHtml}
+            </div>
+          `;
+        }
+
+        for (let day = 1; day <= currentMonthLastDate; day++) {
+          const dateKey = formatDateKey(year, month, day);
+          let holidayName = holidays ? holidays[dateKey] : null;
+
+          const isToday = isCurrentYearMonth && activeToday.getDate() === day;
+          const cellDate = new Date(year, month, day);
+          const isPast = isCurrentYearMonth && cellDate < todayDateOnly;
+          const dayOfWeek = cellDate.getDay();
+          const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+          let moonEvent = phaseMap.get(dateKey);
+
+          const classNames = ['matrix-cell'];
+          if (holidayName) classNames.push('is-holiday');
+          if (isToday) {
+            classNames.push('is-today');
+            if (holidayName || isWeekend) {
+              classNames.push('is-holiday-today');
+            }
+          }
+          if (isPast) classNames.push('is-past');
+
+          let moonBadgeHtml = '';
+          if (moonEvent && !isToday) {
+            moonBadgeHtml = `
+              <div class="moon-svg-pip">
+                ${buildMoonSvgHtml(moonEvent.illum)}
+              </div>
+            `;
+          }
+
+          cellsHtml += `
+            <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
+              <div class="cell-header">
+                <div class="day-num-wrap">
+                  <span class="day-num">${String(day).padStart(2, '0')}</span>
+                </div>
+              </div>
               ${moonBadgeHtml}
             </div>
           `;
@@ -2162,7 +2280,7 @@
                   <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
                 </div>
                 <div class="sub-calendar-matrix">
-                  ${buildMonthMatrixHtml(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), holidays, false)}
+                  ${buildSubMonthMatrixHtml(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), holidays)}
                 </div>
               </div>
               <div class="tac-window">
@@ -2171,7 +2289,7 @@
                   <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
                 </div>
                 <div class="sub-calendar-matrix">
-                  ${buildMonthMatrixHtml(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), holidays, false)}
+                  ${buildSubMonthMatrixHtml(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), holidays)}
                 </div>
               </div>
               ${buildLegendHtml()}
@@ -2183,7 +2301,7 @@
                   <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
                 </div>
                 <div class="main-calendar-matrix">
-                  ${buildMonthMatrixHtml(year, month, holidays, true)}
+                  ${buildMainMonthMatrixHtml(year, month, holidays)}
                 </div>
               </div>
             </div>
@@ -2214,7 +2332,7 @@
                 <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
               </div>
               <div class="calendar-matrix">
-                ${buildMonthMatrixHtml(year, m, holidays, false)}
+                ${buildSubMonthMatrixHtml(year, m, holidays)}
               </div>
             </div>
           `;
