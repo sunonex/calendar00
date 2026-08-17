@@ -1,0 +1,2141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CB TACTICAL OPERATION TERMINAL</title>
+  <!-- 実際の昼夜・休日判定で動的に切り替わる favicon -->
+  <link id="dynamic-favicon" rel="icon" type="image/svg+xml" href="">
+  <!-- PWA Manifest (単一ファイル内包版) -->
+  <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22CB%20Tactical%20Operation%20Terminal%22%2C%22short_name%22%3A%22CB-Tactical%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%2306090d%22%2C%22theme_color%22%3A%22%231a222a%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2796%27%20fill%3D%27%231a222a%27%2F%3E%3Ccircle%20cx%3D%27256%27%20cy%3D%27256%27%20r%3D%2796%27%20fill%3D%27none%27%20stroke%3D%27%2300cc66%27%20stroke-width%3D%2748%27%2F%3E%3Ccircle%20cx%3D%27256%27%20cy%3D%27256%27%20r%3D%2724%27%20fill%3D%27%23ffffff%27%2F%3E%3C%2Fsvg%3E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%5D%7D">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- 標準天体位置推算エンジン -->
+  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+  <style>
+    :root {
+      /* 背景キャンバス */
+      --bg-screen: #e6ebf0;
+      --bg-dot: rgba(50, 75, 100, 0.12);
+      --bg-window: #ffffff;
+      --window-border: rgba(15, 23, 42, 0.08);
+
+      /* Apple風 多層アンビエントシャドウ */
+      --window-shadow: 
+        0 1px 3px rgba(15, 23, 42, 0.04),
+        0 8px 16px -4px rgba(15, 23, 42, 0.06),
+        0 24px 38px -8px rgba(15, 23, 42, 0.08);
+
+      --bar-header: #1a222a;
+      --bar-header-text: #f0f4f8;
+      --bar-footer: #28333e;
+      --bar-footer-text: #d2dce6;
+      --border-dark: #222d36;
+      --border-light: #dbe4ec;
+      --th-bg: #232d36;
+      --th-text: #ffffff;
+      --th-weekend-bg: #161e24;
+      --th-weekend-text: #ff9988;
+      --text-main: #0f1418;
+      --text-sub: #546470;
+      --accent-gray: #7a8c98;
+      --holiday-fill: #fff3e6;
+      --holiday-text: #b33900;
+      --today-badge-bg: #161e24;
+      --today-badge-text: #ffffff;
+      
+      /* 過去日（昨日以前）用の控えめなグレーアウト表現（背景廃止・文字色のみ） */
+      --past-badge-text: #8a99a6;
+
+      --other-month-bg: #f8fafc;
+      --grid-line: #dce5ee;
+      --sub-th-bg: #232d36;
+      --gauge-track: #e2eaf0;
+      --gauge-fill: #232d36;
+      --gauge-accent: #00aa55;
+      --telemetry-bg: #ffffff;
+      --telemetry-border: rgba(15, 23, 42, 0.08);
+      --telemetry-accent: #00aa55;
+      --moon-badge-bg: rgba(15, 23, 42, 0.06);
+      --moon-badge-text: #11161b;
+
+      --today-progress-fill: rgba(15, 23, 42, 0.045);
+
+      --control-bar-past: linear-gradient(90deg, #d8e2ec 0%, #ffffff 100%);
+      --control-bar-future: linear-gradient(90deg, #ffffff 0%, #d8e2ec 100%);
+
+      /* ソーラーテレメトリ */
+      --solar-progress-fill: rgba(15, 23, 42, 0.035);
+      --solar-curve-stroke: rgba(15, 23, 42, 0.16);
+      --solar-base-line: rgba(15, 23, 42, 0.08);
+      --solar-shadow-core: rgba(15, 23, 42, 0.22);
+      --solar-shadow-ambient: rgba(15, 23, 42, 0.10);
+
+      --today-cell-border: rgba(15, 23, 42, 0.16);
+
+      --viewport-max-width: 1420px;
+      --side-window-width: 320px;
+      --main-cell-height: 104px;
+      --year-cell-height: 24px;
+      --moon-icon-size: 20px;
+      --moon-pip-size: 13px;
+      --today-float-offset: 0.5em;
+    }
+
+    [data-size="m"] {
+      --viewport-max-width: 1760px;
+      --side-window-width: 360px;
+      --main-cell-height: 128px;
+      --year-cell-height: 28px;
+      --moon-icon-size: 24px;
+      --moon-pip-size: 16px;
+    }
+
+    [data-size="l"] {
+      --viewport-max-width: 100%;
+      --side-window-width: 400px;
+      --main-cell-height: 152px;
+      --year-cell-height: 32px;
+      --moon-icon-size: 28px;
+      --moon-pip-size: 19px;
+    }
+
+    [data-theme="dark"] {
+      --bg-screen: #06090d;
+      --bg-dot: rgba(180, 205, 230, 0.08);
+      --bg-window: #10161d;
+      --window-border: rgba(255, 255, 255, 0.08);
+      --window-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.5),
+        0 10px 24px -4px rgba(0, 0, 0, 0.65),
+        0 28px 48px -8px rgba(0, 0, 0, 0.75);
+
+      --bar-header: #080c10;
+      --bar-header-text: #edf2f6;
+      --bar-footer: #121820;
+      --bar-footer-text: #9eb1c2;
+      --border-dark: #3a4754;
+      --border-light: #1b242e;
+      --th-bg: #182028;
+      --th-text: #ccd6dd;
+      --th-weekend-bg: #080c10;
+      --th-weekend-text: #ff7766;
+      --text-main: #edf2f6;
+      --text-sub: #8295a3;
+      --accent-gray: #546673;
+      --holiday-fill: #241406;
+      --holiday-text: #ff8c3b;
+      --today-badge-bg: #edf2f6;
+      --today-badge-text: #06090d;
+
+      --past-badge-text: #546673;
+
+      --other-month-bg: #0c1117;
+      --grid-line: #18222b;
+      --sub-th-bg: #182028;
+      --gauge-track: #151e27;
+      --gauge-fill: #00cc66;
+      --gauge-accent: #00ff88;
+      --telemetry-bg: #10161d;
+      --telemetry-border: rgba(255, 255, 255, 0.08);
+      --telemetry-accent: #00cc66;
+      --moon-badge-bg: rgba(255, 255, 255, 0.08);
+      --moon-badge-text: #edf2f6;
+
+      --control-bar-past: linear-gradient(90deg, #18222b 0%, #10161d 100%);
+      --control-bar-future: linear-gradient(90deg, #10161d 0%, #18222b 100%);
+
+      --today-progress-fill: rgba(255, 255, 255, 0.055);
+
+      --solar-progress-fill: rgba(255, 255, 255, 0.035);
+      --solar-curve-stroke: rgba(255, 255, 255, 0.20);
+      --solar-base-line: rgba(255, 255, 255, 0.10);
+      --solar-shadow-core: rgba(255, 255, 255, 0.35);
+      --solar-shadow-ambient: rgba(255, 255, 255, 0.15);
+
+      --today-cell-border: rgba(255, 255, 255, 0.22);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-screen);
+      background-image: radial-gradient(var(--bg-dot) 1.2px, transparent 1.2px);
+      background-size: 20px 20px;
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    /* シンプルで視認性の高いグレーの大判 DEBUG MODE 表記 */
+    body.debug-active::after {
+      content: "DEBUG MODE";
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      font-size: 3.5rem;
+      color: var(--past-badge-text);
+      opacity: 0.35;
+      letter-spacing: 6px;
+      pointer-events: none;
+      z-index: 999;
+      font-weight: 800;
+    }
+
+    .screen-top-taskbar {
+      width: 100%;
+      height: 50px;
+      background: var(--bar-header);
+      color: var(--bar-header-text);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, calc(100% - 330px) 100%, calc(100% - 354px) 26px, 0 26px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--window-border);
+    }
+    .taskbar-left {
+      height: 26px;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      gap: 10px;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #00cc66;
+      margin-right: 2px;
+      box-shadow: 0 0 6px #00cc66;
+      flex-shrink: 0;
+    }
+    .header-ctrl-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      padding: 2px 7px;
+      font-family: inherit;
+      font-size: 0.58rem;
+      font-weight: 700;
+      cursor: pointer;
+      line-height: 1.2;
+      transition: background-color 0.1s, border-color 0.1s;
+    }
+    .header-btn:hover {
+      background: #00cc66;
+      color: #0a0e12;
+      border-color: #00cc66;
+    }
+
+    .taskbar-clock-section {
+      width: 330px;
+      height: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      padding-right: 14px;
+    }
+    .clock-label {
+      font-size: 0.52rem;
+      color: var(--accent-gray);
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .clock-display {
+      font-size: 1.18rem;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      color: #ffffff;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+    .clock-day-tag {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #00cc66;
+      background: rgba(0, 204, 102, 0.12);
+      border: 1px solid rgba(0, 204, 102, 0.35);
+      padding: 1px 5px;
+    }
+
+    .chrono-telemetry-panel {
+      width: calc(100% - 32px);
+      max-width: var(--viewport-max-width);
+      margin: 0 auto 16px auto;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .telemetry-card {
+      background: var(--telemetry-bg);
+      border: 1px solid var(--telemetry-border);
+      box-shadow: var(--window-shadow);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+    }
+    .telemetry-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: var(--card-progress, 0%);
+      background: var(--today-progress-fill);
+      z-index: 1;
+      pointer-events: none;
+      transition: width 0.3s ease;
+    }
+    .telemetry-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 16px; height: 2px;
+      background: var(--telemetry-accent);
+      z-index: 3;
+    }
+    .telemetry-card > * {
+      position: relative;
+      z-index: 2;
+    }
+
+    .gauge-svg-container {
+      width: 40px; height: 40px; flex-shrink: 0;
+    }
+    .gauge-svg {
+      width: 100%; height: 100%; transform: rotate(-90deg);
+    }
+    .gauge-bg-circle {
+      fill: none; stroke: var(--gauge-track); stroke-width: 3;
+    }
+    .gauge-fill-circle {
+      fill: none; stroke: var(--gauge-fill); stroke-width: 3.2;
+      stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100;
+    }
+    .gauge-info { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .gauge-header {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 0.54rem; font-weight: 700; color: var(--accent-gray); margin-bottom: 2px;
+    }
+    .gauge-value-main {
+      font-size: 1.05rem; font-weight: 800; line-height: 1; color: var(--text-main);
+    }
+    .gauge-sub-label {
+      font-size: 0.5rem; color: var(--text-sub); font-weight: 600; margin-top: 3px;
+    }
+    .week-fraction-main { font-size: 1.15rem; font-weight: 800; color: var(--text-main); }
+
+    .screen-control-bar {
+      width: calc(100% - 32px);
+      max-width: var(--viewport-max-width);
+      margin: 0 auto 16px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-window);
+      border: 1px solid var(--window-border);
+      box-shadow: var(--window-shadow);
+      padding: 8px 14px;
+      transition: background 0.15s ease;
+    }
+    .screen-control-bar.is-past {
+      background: var(--control-bar-past);
+    }
+    .screen-control-bar.is-future {
+      background: var(--control-bar-future);
+    }
+
+    .target-date-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .target-date {
+      font-size: 1.3rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .mode-switch-btn {
+      background: transparent;
+      border: 1px solid var(--window-border);
+      color: var(--text-sub);
+      font-family: inherit;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.1s ease, color 0.1s ease, border-color 0.1s ease;
+    }
+    .mode-switch-btn:hover {
+      background: var(--bar-header);
+      color: #ffffff;
+      border-color: var(--bar-header);
+    }
+    .mode-switch-btn .mode-tag {
+      color: #00cc66;
+      font-size: 0.58rem;
+    }
+    .nav-actions { display: flex; gap: 8px; align-items: center; }
+    .tac-btn {
+      background: var(--bg-window);
+      border: 1px solid var(--window-border);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      padding: 5px 12px;
+      font-family: inherit; font-size: 0.72rem; font-weight: 700;
+      cursor: pointer; color: var(--text-main);
+      transition: background-color 0.1s ease, border-color 0.1s ease, box-shadow 0.1s ease;
+    }
+    .tac-btn:hover {
+      background: var(--bar-header);
+      color: #ffffff;
+      border-color: var(--bar-header);
+      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.12);
+    }
+    .tac-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+    }
+
+    .tactical-viewport {
+      width: calc(100% - 32px);
+      max-width: var(--viewport-max-width);
+      margin: 0 auto;
+      flex: 1;
+    }
+    
+    /* ウィンドウ本体 */
+    .tac-window {
+      background: var(--bg-window);
+      border: 1px solid var(--window-border);
+      box-shadow: var(--window-shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    .tac-window-header {
+      background: var(--bar-header);
+      color: var(--bar-header-text);
+      border-bottom: 1px solid var(--window-border);
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      flex-shrink: 0;
+    }
+    .tac-win-btn {
+      width: 9px; height: 9px; border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15); display: inline-block;
+    }
+
+    /* 月表示：左右カラムの高さを完全一致（stretch） */
+    .month-multi-windows { 
+      display: flex; 
+      gap: 18px; 
+      width: 100%; 
+      align-items: stretch; 
+    }
+    .side-windows-column { 
+      width: var(--side-window-width); 
+      flex-shrink: 0; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; 
+    }
+    .side-windows-column .tac-window {
+      flex: 1;
+      min-height: 0;
+    }
+    .main-window-column { 
+      flex: 1; 
+      min-width: 600px; 
+      display: flex;
+      flex-direction: column;
+    }
+    .main-window-column .tac-window {
+      flex: 1;
+    }
+
+    .main-calendar-matrix {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: 28px repeat(6, var(--main-cell-height));
+      background: var(--grid-line); gap: 1px;
+    }
+    .main-calendar-matrix .matrix-th {
+      background: var(--th-bg); color: var(--th-text);
+      font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .main-calendar-matrix .matrix-th.weekend {
+      background: var(--th-weekend-bg); color: var(--th-weekend-text);
+    }
+    .main-calendar-matrix .matrix-cell {
+      background: var(--bg-window); padding: 8px 10px;
+      display: flex; flex-direction: column; justify-content: space-between; position: relative;
+    }
+    .main-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.45; }
+    .main-calendar-matrix .cell-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .main-calendar-matrix .day-num-wrap { display: flex; align-items: center; gap: 4px; }
+    
+    /* 日付数字 */
+    .main-calendar-matrix .day-num {
+      font-size: 2.1rem;
+      font-weight: 400;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 過去日（昨日以前）の日付数字：背景色を廃止し文字色をグレーに変更 */
+    .main-calendar-matrix .matrix-cell.is-past .day-num {
+      color: var(--past-badge-text) !important;
+      font-weight: 400;
+    }
+    .main-calendar-matrix .matrix-cell.is-past .cell-tag {
+      opacity: 0.65;
+    }
+
+    /* 当日セル：立体感とシャドウ表現 */
+    .main-calendar-matrix .matrix-cell.is-today {
+      position: relative;
+      z-index: 6;
+      background: var(--bg-window) !important;
+      overflow: visible !important;
+    }
+    .main-calendar-matrix .matrix-cell.is-today::before {
+      content: '';
+      position: absolute;
+      top: calc(-1 * var(--today-float-offset));
+      left: calc(-1 * var(--today-float-offset));
+      right: var(--today-float-offset);
+      bottom: var(--today-float-offset);
+      background: var(--bg-window);
+      border: 1px solid var(--today-cell-border);
+      box-shadow: 14px 18px 32px rgba(15, 23, 42, 0.18), 32px 42px 72px -4px rgba(15, 23, 42, 0.28);
+      z-index: 1;
+      pointer-events: none;
+    }
+    [data-theme="dark"] .main-calendar-matrix .matrix-cell.is-today::before {
+      box-shadow: 14px 18px 36px rgba(0, 0, 0, 0.85), 32px 46px 80px rgba(0, 0, 0, 0.95);
+    }
+    .main-calendar-matrix .matrix-cell.is-today > * {
+      position: relative;
+      z-index: 3;
+    }
+    .main-calendar-matrix .matrix-cell.is-today .cell-header,
+    .main-calendar-matrix .matrix-cell.is-today .moon-svg-badge,
+    .main-calendar-matrix .matrix-cell.is-today .solar-telemetry-bg {
+      transform: translate(calc(-1 * var(--today-float-offset)), calc(-1 * var(--today-float-offset)));
+    }
+    .main-calendar-matrix .matrix-cell.is-today .day-num {
+      background: var(--today-badge-bg);
+      color: var(--today-badge-text) !important;
+      padding: 2px 6px;
+      font-weight: 600;
+      border-radius: 2px;
+    }
+    .main-calendar-matrix .matrix-cell.is-today .cell-tag {
+      color: var(--text-main);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* 当日セル埋め込みソーラーテレメトリSVG */
+    .solar-telemetry-bg {
+      position: absolute !important;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2 !important;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 1px;
+    }
+
+    /* ステータスタグ */
+    .main-calendar-matrix .cell-tag {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent-gray);
+      background: transparent;
+      border: none;
+      padding: 0;
+      letter-spacing: 0.5px;
+      line-height: 1;
+    }
+
+    /* 通常セルの月相バッジ（右下配置） */
+    .moon-svg-badge {
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--moon-badge-bg);
+      color: var(--moon-badge-text);
+      padding: 3px 6px;
+      border-radius: 2px;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      user-select: none;
+      z-index: 4;
+    }
+    .moon-svg-container {
+      width: var(--moon-icon-size);
+      height: var(--moon-icon-size);
+      flex-shrink: 0;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+    }
+
+    .moon-svg-pip {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: var(--moon-pip-size);
+      height: var(--moon-pip-size);
+      pointer-events: none;
+      z-index: 4;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.1));
+    }
+
+    /* 1行凡例バー */
+    .legend-inline-bar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 6px 10px;
+      background: var(--bg-window);
+      border: 1px solid var(--window-border);
+      box-shadow: var(--window-shadow);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-main);
+      user-select: none;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .legend-inline-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-svg-static {
+      position: static !important;
+      width: var(--moon-icon-size);
+      height: var(--moon-icon-size);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .legend-inline-divider {
+      color: var(--accent-gray);
+      opacity: 0.6;
+    }
+    .year-legend-container {
+      width: var(--side-window-width);
+      margin-top: 16px;
+    }
+
+    .matrix-cell.is-holiday { background: var(--holiday-fill) !important; }
+    .matrix-cell.is-holiday .day-num { color: var(--holiday-text) !important; font-weight: 400; }
+    .main-calendar-matrix .holiday-title {
+      font-size: 0.64rem; font-weight: 700; color: var(--holiday-text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* サブカレンダーマトリックス */
+    .sub-calendar-matrix {
+      flex: 1;
+      display: grid; 
+      grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: 20px repeat(6, 1fr);
+      background: var(--grid-line); 
+      gap: 1px;
+    }
+    .sub-calendar-matrix .matrix-th {
+      background: var(--sub-th-bg); color: var(--th-text);
+      font-size: 0.58rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .sub-calendar-matrix .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
+    .sub-calendar-matrix .matrix-cell {
+      background: var(--bg-window); padding: 2px 4px;
+      display: flex; align-items: flex-start; justify-content: flex-start;
+      position: relative;
+    }
+    .sub-calendar-matrix .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.35; }
+    
+    /* 先月・来月ウィンドウの日付フォント */
+    .sub-calendar-matrix .day-num { 
+      font-size: 1.05rem; 
+      font-weight: 400; 
+      line-height: 1;
+    }
+
+    /* サブ・年表示用の当日セル */
+    .sub-calendar-matrix .matrix-cell.is-today,
+    .year-month-window .matrix-cell.is-today {
+      position: relative;
+      z-index: 6;
+      background: var(--bg-window) !important;
+    }
+    .sub-calendar-matrix .matrix-cell.is-today::before,
+    .year-month-window .matrix-cell.is-today::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--bg-window);
+      border: 1px solid var(--today-cell-border);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      transform: translate(-0.4em, -0.4em);
+      z-index: 1;
+      pointer-events: none;
+    }
+    [data-theme="dark"] .sub-calendar-matrix .matrix-cell.is-today::before,
+    [data-theme="dark"] .year-month-window .matrix-cell.is-today::before {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+    }
+    .sub-calendar-matrix .matrix-cell.is-today > *,
+    .year-month-window .matrix-cell.is-today > * {
+      position: relative;
+      z-index: 2;
+      transform: translate(-0.4em, -0.4em);
+    }
+    .sub-calendar-matrix .matrix-cell.is-today .day-num,
+    .year-month-window .matrix-cell.is-today .day-num {
+      background: var(--today-badge-bg);
+      color: var(--today-badge-text) !important;
+      padding: 0 3px;
+      font-weight: 700;
+      border-radius: 2px;
+    }
+
+    .year-grid-view { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; width: 100%; }
+    .year-month-window {
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .year-month-window:hover {
+      transform: translateY(-3px);
+      box-shadow: 
+        0 2px 4px rgba(15, 23, 42, 0.04),
+        0 12px 24px -4px rgba(15, 23, 42, 0.08),
+        0 30px 48px -8px rgba(15, 23, 42, 0.12);
+    }
+    .year-month-window:active {
+      transform: translateY(0);
+      box-shadow: var(--window-shadow);
+    }
+    .year-month-window .calendar-matrix {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: 20px repeat(6, var(--year-cell-height)); background: var(--grid-line); gap: 1px;
+    }
+    .year-month-window .matrix-th {
+      background: var(--th-bg); color: var(--th-text);
+      font-size: 0.52rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .year-month-window .matrix-th.weekend { background: var(--th-weekend-bg); color: var(--th-weekend-text); }
+    .year-month-window .matrix-cell {
+      background: var(--bg-window); display: flex; align-items: flex-start; justify-content: flex-start;
+      padding: 2px;
+      position: relative;
+    }
+    .year-month-window .matrix-cell.other-month { background: var(--other-month-bg); opacity: 0.3; }
+    .year-month-window .day-num { font-size: 0.65rem; font-weight: 700; }
+
+    .screen-bottom-taskbar {
+      width: 100%; height: 28px; margin-top: 20px;
+      background: var(--bar-footer); color: var(--bar-footer-text);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 16px; font-size: 0.62rem; font-weight: 600; border-top: 1px solid var(--window-border);
+    }
+    .footer-left-status { color: #00cc66; font-weight: 700; }
+    .footer-right-status { display: flex; gap: 20px; align-items: center; }
+    .debug-toggle-btn {
+      background: transparent; border: none; color: var(--bar-footer-text);
+      font-family: inherit; font-size: 0.6rem; font-weight: 700; cursor: pointer; opacity: 0.6;
+      transition: opacity 0.1s;
+    }
+    .debug-toggle-btn:hover { opacity: 1; color: #00cc66; }
+
+    /* Debug OS Window */
+    #debug-window {
+      display: none;
+      position: fixed;
+      top: 80px;
+      left: calc(50% - 210px);
+      width: 420px;
+      background: var(--bg-window);
+      border: 1px solid var(--window-border);
+      box-shadow: var(--window-shadow);
+      z-index: 9999;
+      font-family: inherit;
+      font-size: 0.65rem;
+      user-select: none;
+    }
+    #debug-header {
+      background: var(--bar-header);
+      color: var(--bar-header-text);
+      padding: 6px 10px;
+      cursor: move;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+    #debug-close {
+      background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #fff;
+      width: 14px; height: 14px; font-size: 0.5rem; display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .debug-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    .debug-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .debug-row label {
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+    .debug-input {
+      background: var(--bg-screen);
+      border: 1px solid var(--window-border);
+      color: var(--text-main);
+      padding: 3px 6px;
+      font-family: inherit;
+      font-size: 0.62rem;
+      width: 190px;
+    }
+    .debug-textarea {
+      background: var(--bg-screen);
+      border: 1px solid var(--window-border);
+      color: var(--text-main);
+      padding: 6px;
+      font-family: inherit;
+      font-size: 0.58rem;
+      width: 100%;
+      height: 60px;
+      resize: none;
+    }
+    .debug-note {
+      font-size: 0.52rem;
+      color: var(--accent-gray);
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="screen-top-taskbar">
+    <div class="taskbar-left">
+      <span class="status-indicator"></span>
+      <span>CB-TACTICAL</span>
+      <div class="header-ctrl-group">
+        <button id="header-theme-btn" class="header-btn" type="button">THEME: DARK</button>
+        <button id="header-size-btn" class="header-btn" type="button">SCALE: S</button>
+      </div>
+      <span style="color: var(--accent-gray);">//</span>
+      <span>VEDA-LINK TERMINAL NODE: 04</span>
+    </div>
+    <div class="taskbar-clock-section">
+      <div class="clock-label">CURRENT_SYSTEM_TIME</div>
+      <div class="clock-display">
+        <span id="live-date-time">----.--.-- --:--</span>
+        <span id="live-day" class="clock-day-tag">---</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="chrono-telemetry-panel">
+    <!-- 1. DAY_PROGRESS -->
+    <div id="card-day" class="telemetry-card">
+      <div class="gauge-svg-container">
+        <svg class="gauge-svg" viewBox="0 0 36 36">
+          <path class="gauge-bg-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path id="gauge-day-circle" class="gauge-fill-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-header"><span>DAY_PROGRESS</span><span id="gauge-day-rem">--:-- REMAIN</span></div>
+        <div class="gauge-value-main"><span id="gauge-day-val">00.0</span><span style="font-size: 0.62rem; color: var(--accent-gray);">%</span></div>
+        <div class="gauge-sub-label">DIURNAL CYCLE</div>
+      </div>
+    </div>
+
+    <!-- 2. MONTH_PROGRESS -->
+    <div id="card-month" class="telemetry-card">
+      <div class="gauge-svg-container">
+        <svg class="gauge-svg" viewBox="0 0 36 36">
+          <path class="gauge-bg-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path id="gauge-month-circle" class="gauge-fill-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-header"><span>MONTH_PROGRESS</span><span id="gauge-month-days">--/-- DAYS</span></div>
+        <div class="gauge-value-main"><span id="gauge-month-val">00.0</span><span style="font-size: 0.62rem; color: var(--accent-gray);">%</span></div>
+        <div class="gauge-sub-label">LUNAR/SOLAR CYCLE</div>
+      </div>
+    </div>
+
+    <!-- 3. YEAR_PROGRESS -->
+    <div id="card-year" class="telemetry-card">
+      <div class="gauge-svg-container">
+        <svg class="gauge-svg" viewBox="0 0 36 36">
+          <path class="gauge-bg-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path id="gauge-year-circle" class="gauge-fill-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-header"><span>YEAR_PROGRESS</span><span id="gauge-year-days">---/--- DAYS</span></div>
+        <div class="gauge-value-main"><span id="gauge-year-val">00.0</span><span style="font-size: 0.62rem; color: var(--accent-gray);">%</span></div>
+        <div class="gauge-sub-label">ANNUAL ORBIT VECTOR</div>
+      </div>
+    </div>
+
+    <!-- 4. WEEK_CYCLE -->
+    <div id="card-week" class="telemetry-card">
+      <div class="gauge-svg-container">
+        <svg class="gauge-svg" viewBox="0 0 36 36">
+          <path class="gauge-bg-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path id="gauge-week-circle" class="gauge-fill-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-header"><span>WEEK_CYCLE // ISO</span><span id="week-rate-percent">00.0%</span></div>
+        <div style="display: flex; align-items: baseline; gap: 2px;">
+          <span style="font-size: 0.7rem; font-weight: 700; color: var(--accent-gray); margin-right: 3px;">W-</span>
+          <span id="week-current-val" class="week-fraction-main">00</span>
+          <span style="font-size: 0.8rem; color: var(--accent-gray); font-weight: 700;">/</span>
+          <span id="week-total-val" style="font-size: 0.8rem; color: var(--text-sub); font-weight: 700;">00</span>
+          <span style="font-size: 0.6rem; font-weight: 700; color: var(--accent-gray); margin-left: 4px;">WEEKS</span>
+        </div>
+        <div class="gauge-sub-label">ANNUAL ISO WEEK</div>
+      </div>
+    </div>
+
+    <!-- 5. LUNAR_PHASE -->
+    <div id="card-moon" class="telemetry-card">
+      <div class="gauge-svg-container">
+        <svg class="gauge-svg" viewBox="0 0 36 36">
+          <path class="gauge-bg-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+          <path id="gauge-moon-circle" class="gauge-fill-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+        </svg>
+      </div>
+      <div class="gauge-info">
+        <div class="gauge-header"><span>LUNAR_PHASE</span><span id="moon-phase-icon" style="display:inline-flex; width:var(--moon-icon-size); height:var(--moon-icon-size); vertical-align:middle;"></span></div>
+        <div class="gauge-value-main">
+          <span style="font-size: 0.65rem; color: var(--accent-gray); margin-right: 2px;">AGE</span>
+          <span id="gauge-moon-age">00.0</span>
+        </div>
+        <div class="gauge-sub-label" id="gauge-moon-name">NEW MOON</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="control-bar" class="screen-control-bar">
+    <div class="target-date-group">
+      <div class="target-date" id="display-date">----.--</div>
+      <button id="toggle-view-btn" class="mode-switch-btn" type="button" title="CLICK TO SWITCH VIEW MODE">
+        <span id="mode-text">// MONTH_CYCLE</span>
+        <span class="mode-tag">[SWITCH: YEAR]</span>
+      </button>
+    </div>
+    <div class="nav-actions">
+      <button id="prev-btn" class="tac-btn" type="button">&lt; PREV</button>
+      <button id="today-btn" class="tac-btn" type="button">SYNC_CURRENT</button>
+      <button id="next-btn" class="tac-btn" type="button">NEXT &gt;</button>
+    </div>
+  </section>
+
+  <main class="tactical-viewport">
+    <div id="view-container"></div>
+  </main>
+
+  <footer class="screen-bottom-taskbar">
+    <div class="footer-left-status" id="api-status">API: CONNECTING...</div>
+    <div class="footer-right-status">
+      <div id="grid-status">LAYOUT: 3-WINDOW TACTICAL</div>
+      <div id="holiday-count">LOADED_HOLIDAYS: --</div>
+      <button id="debug-trigger" class="debug-toggle-btn" type="button">[DBG]</button>
+    </div>
+  </footer>
+
+  <!-- Debug OS Window -->
+  <div id="debug-window">
+    <div id="debug-header">
+      <span>[DEBUG_TERMINAL // SYSTEM_DIAGNOSTICS]</span>
+      <button id="debug-close" type="button">X</button>
+    </div>
+    <div class="debug-body">
+      <div class="debug-row">
+        <label>SYS_DATE_OVERRIDE</label>
+        <input type="date" id="dbg-date-input" class="debug-input">
+      </div>
+      <div class="debug-row">
+        <label>SYS_TIME_OVERRIDE (SUN POS)</label>
+        <div style="display:flex; align-items:center; gap:6px; width:190px;">
+          <input type="range" id="dbg-range-time" min="0" max="1439" step="1" value="720" style="flex:1;">
+          <span id="dbg-val-time" style="font-weight:700; width:44px; text-align:right;">AUTO</span>
+        </div>
+      </div>
+      <div class="debug-row">
+        <label>TODAY_FLOAT_OFFSET</label>
+        <div style="display:flex; align-items:center; gap:6px; width:190px;">
+          <input type="range" id="dbg-range-offset" min="0.2" max="1.2" step="0.05" value="0.5" style="flex:1;">
+          <span id="dbg-val-offset" style="font-weight:700; width:36px; text-align:right;">0.5em</span>
+        </div>
+      </div>
+      <div class="debug-row">
+        <label>CELL_HEIGHT_SCALE</label>
+        <div style="display:flex; align-items:center; gap:6px; width:190px;">
+          <input type="range" id="dbg-range-height" min="80" max="180" step="4" value="104" style="flex:1;">
+          <span id="dbg-val-height" style="font-weight:700; width:36px; text-align:right;">104px</span>
+        </div>
+      </div>
+      <div class="debug-row">
+        <label>TODAY_MOON_AGE (0-29.5)</label>
+        <div style="display:flex; align-items:center; gap:6px; width:190px;">
+          <input type="range" id="dbg-range-age" min="0" max="29.5" step="0.1" value="0" style="flex:1;">
+          <span id="dbg-val-age" style="font-weight:700; width:36px; text-align:right;">AUTO</span>
+        </div>
+      </div>
+      <div class="debug-row">
+        <label>OVERRIDE_HOLIDAY</label>
+        <input type="date" id="dbg-holiday-date" class="debug-input">
+      </div>
+      <div class="debug-row">
+        <label>HOLIDAY_NAME</label>
+        <input type="text" id="dbg-holiday-name" class="debug-input" placeholder="SPECIAL HOLIDAY">
+      </div>
+      <div class="debug-row">
+        <label>OVERRIDE_NEW_MOON</label>
+        <input type="date" id="dbg-newmoon-date" class="debug-input">
+      </div>
+      <div class="debug-row">
+        <label>OVERRIDE_FULL_MOON</label>
+        <input type="date" id="dbg-fullmoon-date" class="debug-input">
+      </div>
+      <div class="debug-note">※ 新月・満月指定は当日以外の日にのみ有効です（指定月相の自動推算値をクリアして再配置します）。</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <label style="color:var(--text-sub);">SYSTEM_LOGS</label>
+        <textarea id="dbg-logs" class="debug-textarea" readonly></textarea>
+      </div>
+      <button id="dbg-reset-btn" class="tac-btn" type="button" style="width:100%; text-align:center;">RESET CONFIGURATIONS</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const TOTAL_CELLS = 42;
+      const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+      const SYNODIC_MONTH = 29.530588853;
+
+      const DEFAULT_OBSERVER = (typeof Astronomy !== 'undefined')
+        ? new Astronomy.Observer(38.2682, 140.8694, 40)
+        : null;
+
+      let currentDate = new Date();
+      let viewMode = 'MONTH';
+      let currentTheme = 'light';
+      let currentSize = 's';
+      let holidaysCache = null;
+      let lastDateKey = null;
+      let debugModeActive = false;
+
+      const monthPhaseCache = new Map();
+      const systemLogs = [];
+
+      const logMessage = (msg) => {
+        const timeStr = new Date().toTimeString().split(' ')[0];
+        systemLogs.push(`[${timeStr}] ${msg}`);
+        if (systemLogs.length > 50) systemLogs.shift();
+        const logArea = document.getElementById('dbg-logs');
+        if (logArea) {
+          logArea.value = systemLogs.join('\n');
+          logArea.scrollTop = logArea.scrollHeight;
+        }
+      };
+
+      const liveDateTimeEl = document.getElementById('live-date-time');
+      const liveDayEl = document.getElementById('live-day');
+      const displayDateEl = document.getElementById('display-date');
+      const modeTextEl = document.getElementById('mode-text');
+      const viewContainerEl = document.getElementById('view-container');
+      const apiStatusEl = document.getElementById('api-status');
+      const gridStatusEl = document.getElementById('grid-status');
+      const holidayCountEl = document.getElementById('holiday-count');
+      const prevBtn = document.getElementById('prev-btn');
+      const nextBtn = document.getElementById('next-btn');
+      const todayBtn = document.getElementById('today-btn');
+      const toggleViewBtn = document.getElementById('toggle-view-btn');
+      const headerThemeBtn = document.getElementById('header-theme-btn');
+      const headerSizeBtn = document.getElementById('header-size-btn');
+      const dynamicFaviconEl = document.getElementById('dynamic-favicon');
+      const controlBarEl = document.getElementById('control-bar');
+      const debugTrigger = document.getElementById('debug-trigger');
+      const debugWindow = document.getElementById('debug-window');
+      const debugClose = document.getElementById('debug-close');
+      const debugHeader = document.getElementById('debug-header');
+
+      const gaugeDayCircle = document.getElementById('gauge-day-circle');
+      const gaugeDayVal = document.getElementById('gauge-day-val');
+      const gaugeDayRem = document.getElementById('gauge-day-rem');
+      const gaugeMonthCircle = document.getElementById('gauge-month-circle');
+      const gaugeMonthVal = document.getElementById('gauge-month-val');
+      const gaugeMonthDays = document.getElementById('gauge-month-days');
+      const gaugeYearCircle = document.getElementById('gauge-year-circle');
+      const gaugeYearVal = document.getElementById('gauge-year-val');
+      const gaugeYearDays = document.getElementById('gauge-year-days');
+      
+      const gaugeWeekCircle = document.getElementById('gauge-week-circle');
+      const weekCurrentVal = document.getElementById('week-current-val');
+      const weekTotalVal = document.getElementById('week-total-val');
+      const weekRatePercent = document.getElementById('week-rate-percent');
+
+      const gaugeMoonCircle = document.getElementById('gauge-moon-circle');
+      const gaugeMoonAge = document.getElementById('gauge-moon-age');
+      const gaugeMoonName = document.getElementById('gauge-moon-name');
+      const moonPhaseIcon = document.getElementById('moon-phase-icon');
+
+      const cardDay = document.getElementById('card-day');
+      const cardMonth = document.getElementById('card-month');
+      const cardYear = document.getElementById('card-year');
+      const cardWeek = document.getElementById('card-week');
+      const cardMoon = document.getElementById('card-moon');
+
+      const dateInput = document.getElementById('dbg-date-input');
+      const rangeTime = document.getElementById('dbg-range-time');
+      const valTime = document.getElementById('dbg-val-time');
+      const rangeOffset = document.getElementById('dbg-range-offset');
+      const valOffset = document.getElementById('dbg-val-offset');
+      const rangeHeight = document.getElementById('dbg-range-height');
+      const valHeight = document.getElementById('dbg-val-height');
+      const rangeAge = document.getElementById('dbg-range-age');
+      const valAge = document.getElementById('dbg-val-age');
+
+      const formatMinsToHHMM = (mins) => {
+        const h = String(Math.floor(mins / 60)).padStart(2, '0');
+        const m = String(mins % 60).padStart(2, '0');
+        return `${h}:${m}`;
+      };
+
+      // スライダー連動
+      rangeTime.addEventListener('input', () => {
+        rangeTime.dataset.active = 'true';
+        valTime.textContent = formatMinsToHHMM(parseInt(rangeTime.value, 10));
+        logMessage(`SYS_TIME_OVERRIDE changed to ${valTime.textContent}.`);
+        updateLiveClock();
+      });
+
+      dateInput.addEventListener('input', () => {
+        logMessage('SYS_DATE_OVERRIDE changed.');
+        updateLiveClock();
+        render();
+      });
+
+      rangeOffset.addEventListener('input', () => {
+        const val = rangeOffset.value;
+        valOffset.textContent = val + 'em';
+        document.documentElement.style.setProperty('--today-float-offset', val + 'em');
+      });
+
+      rangeHeight.addEventListener('input', () => {
+        const val = rangeHeight.value;
+        valHeight.textContent = val + 'px';
+        document.documentElement.style.setProperty('--main-cell-height', val + 'px');
+      });
+
+      rangeAge.addEventListener('input', () => {
+        if (rangeAge.value === '0') {
+          valAge.textContent = 'AUTO';
+        } else {
+          valAge.textContent = Number(rangeAge.value).toFixed(1);
+        }
+        updateLiveClock();
+        render();
+      });
+
+      // Draggable Window Logic
+      let isDragging = false;
+      let dragOffsetX = 0, dragOffsetY = 0;
+
+      debugHeader.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        dragOffsetX = e.clientX - debugWindow.offsetLeft;
+        dragOffsetY = e.clientY - debugWindow.offsetTop;
+        e.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        debugWindow.style.left = (e.clientX - dragOffsetX) + 'px';
+        debugWindow.style.top = (e.clientY - dragOffsetY) + 'px';
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+
+      debugTrigger.addEventListener('click', () => {
+        debugModeActive = !debugModeActive;
+        document.body.classList.toggle('debug-active', debugModeActive);
+        debugWindow.style.display = debugModeActive ? 'block' : 'none';
+        logMessage(debugModeActive ? 'DEBUG_MODE activated.' : 'DEBUG_MODE deactivated.');
+      });
+
+      const resetDebugConfigs = () => {
+        const holidayDate = document.getElementById('dbg-holiday-date');
+        const holidayName = document.getElementById('dbg-holiday-name');
+        const newmoonDate = document.getElementById('dbg-newmoon-date');
+        const fullmoonDate = document.getElementById('dbg-fullmoon-date');
+        
+        dateInput.value = '';
+        delete rangeTime.dataset.active;
+        rangeTime.value = '720';
+        valTime.textContent = 'AUTO';
+
+        if (holidayDate) holidayDate.value = '';
+        if (holidayName) holidayName.value = '';
+        if (newmoonDate) newmoonDate.value = '';
+        if (fullmoonDate) fullmoonDate.value = '';
+        
+        rangeAge.value = '0';
+        valAge.textContent = 'AUTO';
+
+        rangeOffset.value = '0.5';
+        valOffset.textContent = '0.5em';
+        document.documentElement.style.setProperty('--today-float-offset', '0.5em');
+
+        rangeHeight.value = '104';
+        valHeight.textContent = '104px';
+        document.documentElement.style.setProperty('--main-cell-height', '104px');
+
+        monthPhaseCache.clear();
+        logMessage('Debug configurations reset.');
+        render();
+      };
+
+      debugClose.addEventListener('click', () => {
+        debugModeActive = false;
+        document.body.classList.remove('debug-active');
+        debugWindow.style.display = 'none';
+        resetDebugConfigs();
+      });
+
+      document.getElementById('dbg-holiday-date').addEventListener('input', () => {
+        logMessage('OVERRIDE_HOLIDAY date changed.');
+        render();
+      });
+      document.getElementById('dbg-holiday-name').addEventListener('input', () => {
+        render();
+      });
+      document.getElementById('dbg-newmoon-date').addEventListener('input', () => {
+        logMessage('OVERRIDE_NEW_MOON changed.');
+        monthPhaseCache.clear();
+        render();
+      });
+      document.getElementById('dbg-fullmoon-date').addEventListener('input', () => {
+        logMessage('OVERRIDE_FULL_MOON changed.');
+        monthPhaseCache.clear();
+        render();
+      });
+      document.getElementById('dbg-reset-btn').addEventListener('click', () => {
+        resetDebugConfigs();
+      });
+
+      // PWA Service Workerの動的登録（単一ファイル完結）
+      if ('serviceWorker' in navigator) {
+        const swCode = `
+          self.addEventListener('install', (e) => e.waitUntil(self.skipWaiting()));
+          self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+          self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+        `;
+        const swBlob = new Blob([swCode], { type: 'text/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      }
+
+      const updateDynamicFavicon = (isHoliday, now) => {
+        const hours = now.getHours();
+        const isDaytime = hours >= 6 && hours < 18;
+
+        const bgHex = isDaytime ? '%23ffffff' : '%23080c10';
+        let strokeHex;
+        if (isHoliday) {
+          strokeHex = isDaytime ? '%23b33900' : '%23ff7766';
+        } else {
+          strokeHex = isDaytime ? '%2300aa55' : '%2300cc66';
+        }
+
+        const innerDotHex = isDaytime ? '%230f1418' : '%23ffffff';
+        const svgString = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='${bgHex}'/><circle cx='16' cy='16' r='6' fill='none' stroke='${strokeHex}' stroke-width='3'/><circle cx='16' cy='16' r='1.5' fill='${innerDotHex}'/></svg>`;
+        dynamicFaviconEl.href = `data:image/svg+xml,${svgString}`;
+      };
+
+      const updateControlBarState = () => {
+        const now = new Date();
+        const curY = currentDate.getFullYear();
+        const curM = currentDate.getMonth();
+        const todayY = now.getFullYear();
+        const todayM = now.getMonth();
+
+        controlBarEl.classList.remove('is-past', 'is-future');
+        if (viewMode === 'MONTH') {
+          const monthDiff = (curY - todayY) * 12 + (curM - todayM);
+          if (monthDiff < 0) {
+            controlBarEl.classList.add('is-past');
+          } else if (monthDiff > 0) {
+            controlBarEl.classList.add('is-future');
+          }
+        } else {
+          const yearDiff = curY - todayY;
+          if (yearDiff < 0) {
+            controlBarEl.classList.add('is-past');
+          } else if (yearDiff > 0) {
+            controlBarEl.classList.add('is-future');
+          }
+        }
+      };
+
+      const buildMoonSvgHtml = (phaseType) => {
+        let isNewMoon = (phaseType === 'NEW' || phaseType === 0);
+        let isFullMoon = (phaseType === 'FULL' || phaseType === 1);
+        let illumination = typeof phaseType === 'number' ? phaseType : (isNewMoon ? 0 : (isFullMoon ? 1 : 0.5));
+
+        const uid = 'm_' + Math.random().toString(36).substring(2, 9);
+
+        if (isNewMoon) {
+          return `
+            <svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;">
+              <defs>
+                <radialGradient id="${uid}-dark" cx="35%" cy="35%" r="75%">
+                  <stop offset="0%" stop-color="#4a5568" />
+                  <stop offset="100%" stop-color="#1a202c" />
+                </radialGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill="url(#${uid}-dark)" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.8" />
+            </svg>
+          `;
+        }
+
+        if (isFullMoon) {
+          return `
+            <svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;">
+              <defs>
+                <radialGradient id="${uid}-lit" cx="35%" cy="35%" r="75%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="70%" stop-color="#e2e8f0" />
+                  <stop offset="100%" stop-color="#94a3b8" />
+                </radialGradient>
+              </defs>
+              <circle cx="12" cy="12" r="10" fill="url(#${uid}-lit)" />
+              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(0,0,0,0.2)" stroke-width="0.8" />
+            </svg>
+          `;
+        }
+
+        const sweep = illumination > 0.5 ? 1 : 0;
+        const rx = Math.abs(Math.cos(illumination * Math.PI)) * 10;
+        const pathD = `M 12 2 A 10 10 0 0 1 12 22 A ${rx} 10 0 0 ${sweep} 12 2 Z`;
+
+        return `
+          <svg viewBox="0 0 24 24" style="width:100%; height:100%; display:block;">
+            <defs>
+              <radialGradient id="${uid}-base" cx="35%" cy="35%" r="75%">
+                <stop offset="0%" stop-color="#4a5568" />
+                <stop offset="100%" stop-color="#1a202c" />
+              </radialGradient>
+              <radialGradient id="${uid}-bright" cx="35%" cy="35%" r="75%">
+                <stop offset="0%" stop-color="#ffffff" />
+                <stop offset="70%" stop-color="#e2e8f0" />
+                <stop offset="100%" stop-color="#94a3b8" />
+              </radialGradient>
+              <clipPath id="${uid}-clip">
+                <circle cx="12" cy="12" r="10" />
+              </clipPath>
+            </defs>
+            <circle cx="12" cy="12" r="10" fill="url(#${uid}-base)" />
+            <g clip-path="url(#${uid}-clip)">
+              <path d="${pathD}" fill="url(#${uid}-bright)" />
+            </g>
+            <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(0,0,0,0.25)" stroke-width="0.8" />
+          </svg>
+        `;
+      };
+
+      const getSolarOrbitParams = (date) => {
+        const midnight = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+        let noonPct = 50.0;
+        let maxAlt = 51.7;
+        let minAlt = -51.7;
+
+        if (typeof Astronomy !== 'undefined' && DEFAULT_OBSERVER) {
+          try {
+            const noonSearch = Astronomy.SearchHourAngle('Sun', DEFAULT_OBSERVER, 0, midnight);
+            if (noonSearch && noonSearch.date) {
+              const nDate = noonSearch.date;
+              const noonMins = nDate.getHours() * 60 + nDate.getMinutes() + nDate.getSeconds() / 60;
+              noonPct = (noonMins / 1440) * 100;
+
+              const eqNoon = Astronomy.Equator('Sun', nDate, DEFAULT_OBSERVER, true, true);
+              const horNoon = Astronomy.Horizon(nDate, DEFAULT_OBSERVER, eqNoon.ra, eqNoon.dec, 'normal');
+              maxAlt = Math.max(10, horNoon.altitude);
+            }
+            const midnightSearch = Astronomy.SearchHourAngle('Sun', DEFAULT_OBSERVER, 12, midnight);
+            if (midnightSearch && midnightSearch.date) {
+              const mDate = midnightSearch.date;
+              const eqMid = Astronomy.Equator('Sun', mDate, DEFAULT_OBSERVER, true, true);
+              const horMid = Astronomy.Horizon(mDate, DEFAULT_OBSERVER, eqMid.ra, eqMid.dec, 'normal');
+              minAlt = horMid.altitude;
+            }
+          } catch {}
+        }
+        return { noonPct, maxAlt, minAlt };
+      };
+
+      const computePureSineY = (xPct, noonPct, baselineY, peakY, bottomY) => {
+        const angle = ((xPct - noonPct) / 100) * 2 * Math.PI;
+        const cosVal = Math.cos(angle);
+
+        if (cosVal >= 0) {
+          return baselineY - cosVal * (baselineY - peakY);
+        } else {
+          return baselineY + Math.abs(cosVal) * (bottomY - baselineY);
+        }
+      };
+
+      const buildSolarSvgHtml = (now) => {
+        const { noonPct, maxAlt, minAlt } = getSolarOrbitParams(now);
+        const currentMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+        const nowPct = Math.min(100, Math.max(0, (currentMins / 1440) * 100));
+
+        const baselineY = 64;
+        const topLimitY = 6;
+        const bottomLimitY = 94;
+
+        const peakY = baselineY - (Math.min(90, Math.max(10, maxAlt)) / 90) * (baselineY - topLimitY);
+        const bottomY = baselineY + (Math.min(90, Math.max(10, Math.abs(minAlt))) / 90) * (bottomLimitY - baselineY);
+
+        const steps = 100;
+        let pathD = '';
+        for (let i = 0; i <= steps; i++) {
+          const x = (i / steps) * 100;
+          const y = computePureSineY(x, noonPct, baselineY, peakY, bottomY);
+          pathD += (i === 0 ? `M ${x.toFixed(2)} ${y.toFixed(2)}` : ` L ${x.toFixed(2)} ${y.toFixed(2)}`);
+        }
+
+        const sunX = nowPct;
+        const sunY = computePureSineY(sunX, noonPct, baselineY, peakY, bottomY);
+        const sunUid = 'sun_' + Math.random().toString(36).substring(2, 9);
+
+        return `
+          <svg class="solar-telemetry-bg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <filter id="${sunUid}-blur" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" />
+              </filter>
+              <radialGradient id="${sunUid}-ambient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="var(--solar-shadow-core)" />
+                <stop offset="60%" stop-color="var(--solar-shadow-ambient)" />
+                <stop offset="100%" stop-color="transparent" />
+              </radialGradient>
+            </defs>
+
+            <rect class="solar-prog-rect" x="0" y="0" width="${nowPct.toFixed(2)}" height="100" fill="var(--solar-progress-fill)" />
+            <line x1="0" y1="${baselineY}" x2="100" y2="${baselineY}" stroke="var(--solar-base-line)" stroke-width="0.7" />
+            <path class="solar-orbit-path" d="${pathD}" fill="none" stroke="var(--solar-curve-stroke)" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round" />
+            
+            <circle cx="${sunX.toFixed(2)}" cy="${sunY.toFixed(2)}" r="10" fill="url(#${sunUid}-ambient)" filter="url(#${sunUid}-blur)" />
+            <circle cx="${sunX.toFixed(2)}" cy="${sunY.toFixed(2)}" r="5.5" fill="url(#${sunUid}-ambient)" opacity="0.8" />
+            <circle cx="${sunX.toFixed(2)}" cy="${sunY.toFixed(2)}" r="2.2" fill="var(--text-main)" stroke="var(--bg-window)" stroke-width="0.6" />
+          </svg>
+        `;
+      };
+
+      const getMonthPhaseMap = (year, month) => {
+        const cacheKey = `${year}-${month}`;
+        if (monthPhaseCache.has(cacheKey)) return monthPhaseCache.get(cacheKey);
+
+        const map = new Map();
+        if (typeof Astronomy === 'undefined') return map;
+
+        const rangeStart = new Date(Date.UTC(year, month, 1) - 7 * 86400000);
+        const rangeEnd = new Date(Date.UTC(year, month + 1, 7));
+
+        let mq = Astronomy.SearchMoonQuarter(rangeStart);
+        while (mq && mq.time.date <= rangeEnd) {
+          const jstDate = mq.time.date;
+          const key = `${jstDate.getFullYear()}-${String(jstDate.getMonth() + 1).padStart(2, '0')}-${String(jstDate.getDate()).padStart(2, '0')}`;
+          
+          if (mq.quarter === 0) {
+            map.set(key, { type: 'NEW', illum: 0 });
+          } else if (mq.quarter === 2) {
+            map.set(key, { type: 'FULL', illum: 1 });
+          }
+
+          mq = Astronomy.NextMoonQuarter(mq);
+        }
+
+        // デバッグオーバーライド：新月・満月指定時は自動推算の該当フェーズを消去して差し替える
+        const dbgNewMoon = document.getElementById('dbg-newmoon-date');
+        const dbgFullMoon = document.getElementById('dbg-fullmoon-date');
+        if (debugModeActive) {
+          if (dbgNewMoon && dbgNewMoon.value) {
+            for (let [k, v] of map.entries()) {
+              if (v.type === 'NEW') map.delete(k);
+            }
+            map.set(dbgNewMoon.value, { type: 'NEW', illum: 0 });
+          }
+          if (dbgFullMoon && dbgFullMoon.value) {
+            for (let [k, v] of map.entries()) {
+              if (v.type === 'FULL') map.delete(k);
+            }
+            map.set(dbgFullMoon.value, { type: 'FULL', illum: 1 });
+          }
+        }
+
+        monthPhaseCache.set(cacheKey, map);
+        return map;
+      };
+
+      const getMoonAge = (d) => {
+        const dbgRangeAge = document.getElementById('dbg-range-age');
+        if (debugModeActive && dbgRangeAge && dbgRangeAge.value !== '0') {
+          return parseFloat(dbgRangeAge.value);
+        }
+        const refNewMoon = Date.UTC(2000, 0, 6, 18, 14, 0);
+        const targetUTC = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
+        const diffDays = (targetUTC - refNewMoon) / 86400000;
+        let age = diffDays % SYNODIC_MONTH;
+        if (age < 0) age += SYNODIC_MONTH;
+        return age;
+      };
+
+      const getMoonIllumination = (age) => {
+        return (1 - Math.cos((age / SYNODIC_MONTH) * 2 * Math.PI)) / 2;
+      };
+
+      const getMoonPhaseName = (age) => {
+        if (age < 1.0 || age > 28.5) return { name: 'NEW MOON' };
+        if (age < 6.5) return { name: 'WAXING CRESCENT' };
+        if (age < 8.5) return { name: 'FIRST QUARTER' };
+        if (age < 13.5) return { name: 'WAXING GIBBOUS' };
+        if (age < 16.0) return { name: 'FULL MOON' };
+        if (age < 21.5) return { name: 'WANING GIBBOUS' };
+        if (age < 23.5) return { name: 'LAST QUARTER' };
+        return { name: 'WANING CRESCENT' };
+      };
+
+      const getISOWeekDetails = (d) => {
+        const target = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dayNum = target.getUTCDay() || 7;
+        target.setUTCDate(target.getUTCDate() + 4 - dayNum);
+        const isoYear = target.getUTCFullYear();
+        const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+        const weekNo = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+        const dec28 = new Date(Date.UTC(isoYear, 11, 28));
+        const dec28Day = dec28.getUTCDay() || 7;
+        dec28.setUTCDate(dec28.getUTCDate() + 4 - dec28Day);
+        const totalWeeks = Math.ceil((((dec28 - new Date(Date.UTC(dec28.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
+        return { weekNo, totalWeeks };
+      };
+
+      const updateTelemetryMetrics = (now) => {
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const endOfDay = startOfDay + 86400000;
+        const nowTime = now.getTime();
+        const dayPct = Math.min(100, Math.max(0, ((nowTime - startOfDay) / 86400000) * 100));
+        
+        // 1. Day Progress
+        gaugeDayCircle.style.strokeDashoffset = (100 - dayPct).toFixed(2);
+        gaugeDayVal.textContent = dayPct.toFixed(1);
+        cardDay.style.setProperty('--card-progress', `${dayPct.toFixed(1)}%`);
+
+        const remSecTotal = Math.max(0, Math.floor((endOfDay - nowTime) / 1000));
+        const remH = String(Math.floor(remSecTotal / 3600)).padStart(2, '0');
+        const remM = String(Math.floor((remSecTotal % 3600) / 60)).padStart(2, '0');
+        gaugeDayRem.textContent = `-${remH}:${remM} REMAIN`;
+
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        const startOfMonth = new Date(y, m, 1).getTime();
+        const endOfMonth = new Date(y, m + 1, 1).getTime();
+        const monthPct = Math.min(100, Math.max(0, ((nowTime - startOfMonth) / (endOfMonth - startOfMonth)) * 100));
+        const totalDaysInMonth = new Date(y, m + 1, 0).getDate();
+        
+        // 2. Month Progress
+        gaugeMonthCircle.style.strokeDashoffset = (100 - monthPct).toFixed(2);
+        gaugeMonthVal.textContent = monthPct.toFixed(1);
+        cardMonth.style.setProperty('--card-progress', `${monthPct.toFixed(1)}%`);
+        gaugeMonthDays.textContent = `${String(now.getDate()).padStart(2, '0')}/${totalDaysInMonth} DAYS`;
+
+        const startOfYear = new Date(y, 0, 1).getTime();
+        const endOfYear = new Date(y + 1, 0, 1).getTime();
+        const yearPct = Math.min(100, Math.max(0, ((nowTime - startOfYear) / (endOfYear - startOfYear)) * 100));
+        const isLeap = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+        const totalDaysInYear = isLeap ? 366 : 365;
+        const dayOfYear = Math.floor((nowTime - startOfYear) / 86400000) + 1;
+        
+        // 3. Year Progress
+        gaugeYearCircle.style.strokeDashoffset = (100 - yearPct).toFixed(2);
+        gaugeYearVal.textContent = yearPct.toFixed(1);
+        cardYear.style.setProperty('--card-progress', `${yearPct.toFixed(1)}%`);
+        gaugeYearDays.textContent = `${String(dayOfYear).padStart(3, '0')}/${totalDaysInYear} DAYS`;
+
+        // 4. Week Progress (円グラフ版)
+        const { weekNo, totalWeeks } = getISOWeekDetails(now);
+        const weekRate = Math.min(100, Math.max(0, (weekNo / totalWeeks) * 100));
+        gaugeWeekCircle.style.strokeDashoffset = (100 - weekRate).toFixed(2);
+        weekRatePercent.textContent = `${weekRate.toFixed(1)}%`;
+        cardWeek.style.setProperty('--card-progress', `${weekRate.toFixed(1)}%`);
+        weekCurrentVal.textContent = String(weekNo).padStart(2, '0');
+        weekTotalVal.textContent = String(totalWeeks).padStart(2, '0');
+
+        // 5. Lunar Phase
+        const moonAge = getMoonAge(now);
+        const moonPhaseInfo = getMoonPhaseName(moonAge);
+        const moonPct = (moonAge / SYNODIC_MONTH) * 100;
+        gaugeMoonCircle.style.strokeDashoffset = (100 - moonPct).toFixed(2);
+        gaugeMoonAge.textContent = moonAge.toFixed(1);
+        cardMoon.style.setProperty('--card-progress', `${moonPct.toFixed(1)}%`);
+        gaugeMoonName.textContent = moonPhaseInfo.name;
+        moonPhaseIcon.innerHTML = `<span class="moon-svg-container" style="display:inline-block;">${buildMoonSvgHtml(getMoonIllumination(moonAge))}</span>`;
+
+        // カレンダー上の「今日」セルの背景進捗を更新
+        const todayCell = document.querySelector('.main-calendar-matrix .matrix-cell.is-today');
+        if (todayCell) {
+          todayCell.style.setProperty('--today-progress', `${dayPct.toFixed(1)}%`);
+
+          const oldSvg = todayCell.querySelector('.solar-telemetry-bg');
+          if (oldSvg) {
+            const { noonPct, maxAlt, minAlt } = getSolarOrbitParams(now);
+            const currentMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+            const nowPct = Math.min(100, Math.max(0, (currentMins / 1440) * 100));
+            const baselineY = 64;
+            const topLimitY = 6;
+            const bottomLimitY = 94;
+            const peakY = baselineY - (Math.min(90, Math.max(10, maxAlt)) / 90) * (baselineY - topLimitY);
+            const bottomY = baselineY + (Math.min(90, Math.max(10, Math.abs(minAlt))) / 90) * (bottomLimitY - baselineY);
+
+            const sunX = nowPct;
+            const sunY = computePureSineY(sunX, noonPct, baselineY, peakY, bottomY);
+
+            const progRect = oldSvg.querySelector('.solar-prog-rect');
+            const circles = oldSvg.querySelectorAll('circle');
+
+            if (progRect) progRect.setAttribute('width', nowPct.toFixed(2));
+            circles.forEach(c => {
+              c.setAttribute('cx', sunX.toFixed(2));
+              c.setAttribute('cy', sunY.toFixed(2));
+            });
+          }
+        }
+      };
+
+      const updateLiveClock = () => {
+        let now = new Date();
+        
+        if (debugModeActive) {
+          let targetYear = now.getFullYear();
+          let targetMonth = now.getMonth();
+          let targetDate = now.getDate();
+
+          if (dateInput && dateInput.value) {
+            const [y, m, d] = dateInput.value.split('-').map(Number);
+            targetYear = y;
+            targetMonth = m - 1;
+            targetDate = d;
+          }
+
+          let hours = now.getHours();
+          let minutes = now.getMinutes();
+          let seconds = now.getSeconds();
+
+          if (rangeTime && rangeTime.dataset.active === 'true') {
+            const totalMins = parseInt(rangeTime.value, 10);
+            hours = Math.floor(totalMins / 60);
+            minutes = totalMins % 60;
+            seconds = 0;
+          }
+
+          now = new Date(targetYear, targetMonth, targetDate, hours, minutes, seconds);
+        }
+
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const day = WEEKDAYS[now.getDay()];
+
+        liveDateTimeEl.textContent = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        liveDayEl.textContent = day;
+
+        document.title = `${yyyy}-${mm}-${dd} (${day}) ${hh}:${min} | CB TACTICAL OPERATION TERMINAL`;
+
+        updateTelemetryMetrics(now);
+
+        const dateKey = `${yyyy}-${mm}-${dd}`;
+        let isHoliday = (holidaysCache && holidaysCache[dateKey]) || now.getDay() === 0 || now.getDay() === 6;
+        
+        const holidayDate = document.getElementById('dbg-holiday-date');
+        if (debugModeActive && holidayDate && holidayDate.value) {
+          if (holidayDate.value === dateKey) isHoliday = true;
+        }
+
+        updateDynamicFavicon(isHoliday, now);
+
+        const currentDateKey = `${yyyy}-${mm}-${dd}`;
+        if (lastDateKey !== null && lastDateKey !== currentDateKey) {
+          render();
+        }
+        lastDateKey = currentDateKey;
+      };
+
+      setInterval(updateLiveClock, 1000);
+      updateLiveClock();
+
+      const syncStateFromUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        currentTheme = params.get('theme') === 'dark' ? 'dark' : 'light';
+        applyTheme(currentTheme, false);
+
+        const paramSize = (params.get('size') || '').toLowerCase();
+        currentSize = ['s', 'm', 'l'].includes(paramSize) ? paramSize : 's';
+        applySize(currentSize, false);
+
+        viewMode = params.get('view') === 'year' ? 'YEAR' : 'MONTH';
+
+        const paramDate = params.get('date');
+        if (paramDate) {
+          const parts = paramDate.split('-');
+          const y = parseInt(parts[0], 10);
+          const m = parts[1] ? parseInt(parts[1], 10) - 1 : 0;
+          if (!isNaN(y) && y >= 1900 && y <= 2100) {
+            currentDate = new Date(y, isNaN(m) ? 0 : m, 1);
+          }
+        }
+      };
+
+      const updateUrlParams = () => {
+        const params = new URLSearchParams();
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        params.set('theme', currentTheme);
+        params.set('size', currentSize);
+        params.set('view', viewMode.toLowerCase());
+        params.set('date', viewMode === 'YEAR' ? `${year}` : `${year}-${month}`);
+        window.history.pushState(null, '', `${window.location.pathname}?${params.toString()}`);
+      };
+
+      const applyTheme = (theme, updateUrl = true) => {
+        currentTheme = theme;
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          headerThemeBtn.textContent = 'THEME: LIGHT';
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+          headerThemeBtn.textContent = 'THEME: DARK';
+        }
+        if (updateUrl) updateUrlParams();
+      };
+
+      const applySize = (size, updateUrl = true) => {
+        currentSize = size;
+        document.documentElement.setAttribute('data-size', size);
+        headerSizeBtn.textContent = `SCALE: ${size.toUpperCase()}`;
+        if (updateUrl) updateUrlParams();
+      };
+
+      const fetchHolidays = async () => {
+        if (holidaysCache) return holidaysCache;
+        try {
+          const res = await fetch('https://holidays-jp.github.io/api/v1/date.json');
+          if (!res.ok) throw new Error();
+          holidaysCache = await res.json();
+          apiStatusEl.textContent = 'API: VEDA_DATALINK_OK';
+          holidayCountEl.textContent = `LOADED_HOLIDAYS: ${Object.keys(holidaysCache).length}`;
+          logMessage('Holidays loaded successfully.');
+          return holidaysCache;
+        } catch {
+          apiStatusEl.textContent = 'API: STANDALONE_CALC_OK';
+          logMessage('Holidays load failed, fallback to standalone.');
+          return {};
+        }
+      };
+
+      const getMondayFirstDayIndex = (date) => (date.getDay() + 6) % 7;
+      const formatDateKey = (year, month, day) => `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+      const buildLegendHtml = () => `
+        <div class="legend-inline-bar">
+          <span class="legend-inline-item">
+            <span class="legend-svg-static">${buildMoonSvgHtml('NEW')}</span>
+            <span>NEW MOON</span>
+          </span>
+          <span class="legend-inline-divider">/</span>
+          <span class="legend-inline-item">
+            <span class="legend-svg-static">${buildMoonSvgHtml('FULL')}</span>
+            <span>FULL MOON</span>
+          </span>
+        </div>
+      `;
+
+      const buildMonthMatrixHtml = (year, month, holidays, isDetailed = true) => {
+        const firstDay = new Date(year, month, 1);
+        const startDayIndex = getMondayFirstDayIndex(firstDay);
+        const prevMonthLastDate = new Date(year, month, 0).getDate();
+        const currentMonthLastDate = new Date(year, month + 1, 0).getDate();
+
+        // 仮想的な「今日」の判定（デバッグオーバーライド対応）
+        let activeToday = new Date();
+        if (debugModeActive) {
+          let targetYear = activeToday.getFullYear();
+          let targetMonth = activeToday.getMonth();
+          let targetDate = activeToday.getDate();
+
+          if (dateInput && dateInput.value) {
+            const [y, m, d] = dateInput.value.split('-').map(Number);
+            targetYear = y;
+            targetMonth = m - 1;
+            targetDate = d;
+          }
+
+          let hours = activeToday.getHours();
+          let minutes = activeToday.getMinutes();
+          let seconds = activeToday.getSeconds();
+
+          if (rangeTime && rangeTime.dataset.active === 'true') {
+            const totalMins = parseInt(rangeTime.value, 10);
+            hours = Math.floor(totalMins / 60);
+            minutes = totalMins % 60;
+            seconds = 0;
+          }
+
+          activeToday = new Date(targetYear, targetMonth, targetDate, hours, minutes, seconds);
+        }
+
+        const todayDateOnly = new Date(activeToday.getFullYear(), activeToday.getMonth(), activeToday.getDate());
+        const isCurrentYearMonth = activeToday.getFullYear() === year && activeToday.getMonth() === month;
+        const phaseMap = getMonthPhaseMap(year, month);
+
+        let cellsHtml = `
+          <div class="matrix-th">MON</div>
+          <div class="matrix-th">TUE</div>
+          <div class="matrix-th">WED</div>
+          <div class="matrix-th">THU</div>
+          <div class="matrix-th">FRI</div>
+          <div class="matrix-th weekend">SAT</div>
+          <div class="matrix-th weekend">SUN</div>
+        `;
+
+        for (let i = startDayIndex - 1; i >= 0; i--) {
+          const dayVal = prevMonthLastDate - i;
+          const prevMonth = month === 0 ? 11 : month - 1;
+          const prevYear = month === 0 ? year - 1 : year;
+          const dateKey = formatDateKey(prevYear, prevMonth, dayVal);
+          const holidayName = holidays ? holidays[dateKey] : null;
+          const moonEvent = phaseMap.get(dateKey);
+
+          const classNames = ['matrix-cell', 'other-month'];
+          if (holidayName) classNames.push('is-holiday');
+
+          let moonBadgeHtml = '';
+          if (moonEvent) {
+            moonBadgeHtml = `
+              <div class="moon-svg-pip">
+                ${buildMoonSvgHtml(moonEvent.illum)}
+              </div>
+            `;
+          }
+
+          cellsHtml += `
+            <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
+              <div class="cell-header">
+                <div class="day-num-wrap"><span class="day-num">${String(dayVal).padStart(2, '0')}</span></div>
+              </div>
+              ${moonBadgeHtml}
+            </div>
+          `;
+        }
+
+        for (let day = 1; day <= currentMonthLastDate; day++) {
+          const dateKey = formatDateKey(year, month, day);
+          let holidayName = holidays ? holidays[dateKey] : null;
+
+          const holidayDate = document.getElementById('dbg-holiday-date');
+          const holidayNameInput = document.getElementById('dbg-holiday-name');
+          if (debugModeActive && holidayDate && holidayDate.value) {
+            if (holidayDate.value === dateKey) {
+              holidayName = (holidayNameInput && holidayNameInput.value) ? holidayNameInput.value : 'SPECIAL HOLIDAY';
+            }
+          }
+
+          const isToday = isCurrentYearMonth && activeToday.getDate() === day;
+          const cellDate = new Date(year, month, day);
+          const isPast = isCurrentYearMonth && cellDate < todayDateOnly;
+          let moonEvent = phaseMap.get(dateKey);
+
+          const classNames = ['matrix-cell'];
+          if (holidayName) classNames.push('is-holiday');
+          if (isToday) classNames.push('is-today');
+          if (isPast) classNames.push('is-past');
+
+          let cellTagLabel = 'ACT';
+          let cellTagContent = '';
+
+          if (isToday) {
+            // 当日セルの月齢アイコン（スライダー連動）
+            const moonIllum = getMoonIllumination(getMoonAge(activeToday));
+            cellTagContent = `
+              <span style="width:20px; height:20px; display:inline-block; vertical-align:middle;">${buildMoonSvgHtml(moonIllum)}</span>
+            `;
+          } else if (isPast) {
+            cellTagLabel = 'LOG';
+            cellTagContent = cellTagLabel;
+          } else if (holidayName) {
+            cellTagLabel = 'HLD';
+            cellTagContent = cellTagLabel;
+          } else if (isDetailed) {
+            if (cellDate > todayDateOnly) {
+              cellTagLabel = 'QUE';
+            }
+            cellTagContent = cellTagLabel;
+          }
+
+          let moonBadgeHtml = '';
+          if (moonEvent && !isToday) {
+            if (isDetailed) {
+              moonBadgeHtml = `
+                <div class="moon-svg-badge">
+                  <div class="moon-svg-container">${buildMoonSvgHtml(moonEvent.illum)}</div>
+                  <span>${moonEvent.type}</span>
+                </div>
+              `;
+            } else {
+              moonBadgeHtml = `
+                <div class="moon-svg-pip">
+                  ${buildMoonSvgHtml(moonEvent.illum)}
+                </div>
+              `;
+            }
+          }
+
+          const solarBgHtml = (isDetailed && isToday) ? buildSolarSvgHtml(activeToday) : '';
+
+          cellsHtml += `
+            <div class="${classNames.join(' ')}"${holidayName ? ` title="${holidayName}"` : ''}>
+              ${solarBgHtml}
+              <div class="cell-header">
+                <div class="day-num-wrap">
+                  <span class="day-num">${String(day).padStart(2, '0')}</span>
+                </div>
+                ${isDetailed ? `<span class="cell-tag">${cellTagContent}</span>` : ''}
+              </div>
+              ${isDetailed && holidayName ? `<div class="holiday-title" title="${holidayName}">${holidayName}</div>` : ''}
+              ${moonBadgeHtml}
+            </div>
+          `;
+        }
+
+        const remainingCells = TOTAL_CELLS - (startDayIndex + currentMonthLastDate);
+        for (let day = 1; day <= remainingCells; day++) {
+          cellsHtml += `
+            <div class="matrix-cell other-month">
+              <div class="cell-header">
+                <div class="day-num-wrap"><span class="day-num">${String(day).padStart(2, '0')}</span></div>
+                ${isDetailed ? '<span class="cell-tag">NEXT</span>' : ''}
+              </div>
+            </div>
+          `;
+        }
+        return cellsHtml;
+      };
+
+      const renderMonthView = async () => {
+        const holidays = await fetchHolidays();
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const prevMonthDate = new Date(year, month - 1, 1);
+        const nextMonthDate = new Date(year, month + 1, 1);
+
+        displayDateEl.textContent = `${year}.${String(month + 1).padStart(2, '0')}`;
+        toggleViewBtn.innerHTML = `
+          <span>// MONTH_CYCLE</span>
+          <span class="mode-tag">[SWITCH: YEAR]</span>
+        `;
+        gridStatusEl.textContent = 'LAYOUT: 3-WINDOW TACTICAL (30% PREV/NEXT | 70% MAIN)';
+
+        updateControlBarState();
+
+        viewContainerEl.innerHTML = `
+          <div class="month-multi-windows">
+            <div class="side-windows-column">
+              <div class="tac-window">
+                <div class="tac-window-header">
+                  <div>[SUB-01] ${prevMonthDate.getFullYear()}.${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}</div>
+                  <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
+                </div>
+                <div class="sub-calendar-matrix">
+                  ${buildMonthMatrixHtml(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), holidays, false)}
+                </div>
+              </div>
+              <div class="tac-window">
+                <div class="tac-window-header">
+                  <div>[SUB-02] ${nextMonthDate.getFullYear()}.${String(nextMonthDate.getMonth() + 1).padStart(2, '0')}</div>
+                  <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
+                </div>
+                <div class="sub-calendar-matrix">
+                  ${buildMonthMatrixHtml(nextMonthDate.getFullYear(), nextMonthDate.getMonth(), holidays, false)}
+                </div>
+              </div>
+              ${buildLegendHtml()}
+            </div>
+            <div class="main-window-column">
+              <div class="tac-window">
+                <div class="tac-window-header">
+                  <div>[PRIMARY-OPERATION] ${year}.${String(month + 1).padStart(2, '0')} // TACTICAL_MATRIX</div>
+                  <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
+                </div>
+                <div class="main-calendar-matrix">
+                  ${buildMonthMatrixHtml(year, month, holidays, true)}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      };
+
+      const renderYearView = async () => {
+        const holidays = await fetchHolidays();
+        const year = currentDate.getFullYear();
+
+        displayDateEl.textContent = `${year}`;
+        toggleViewBtn.innerHTML = `
+          <span>// ANNUAL_CYCLE</span>
+          <span class="mode-tag">[SWITCH: MONTH]</span>
+        `;
+        gridStatusEl.textContent = 'LAYOUT: 12-MONTH OVERVIEW (4x3 MATRIX)';
+
+        updateControlBarState();
+
+        let yearCardsHtml = '<div class="year-grid-view">';
+        for (let m = 0; m < 12; m++) {
+          const monthLabel = String(m + 1).padStart(2, '0');
+          yearCardsHtml += `
+            <div class="tac-window year-month-window" data-month="${m}">
+              <div class="tac-window-header">
+                <div>[M-${monthLabel}] ${year}.${monthLabel}</div>
+                <div class="tac-window-controls"><span class="tac-win-btn"></span></div>
+              </div>
+              <div class="calendar-matrix">
+                ${buildMonthMatrixHtml(year, m, holidays, false)}
+              </div>
+            </div>
+          `;
+        }
+        yearCardsHtml += '</div>';
+        yearCardsHtml += `<div class="year-legend-container">${buildLegendHtml()}</div>`;
+
+        viewContainerEl.innerHTML = yearCardsHtml;
+        viewContainerEl.querySelectorAll('.year-month-window').forEach(card => {
+          card.addEventListener('click', () => {
+            currentDate = new Date(year, parseInt(card.getAttribute('data-month'), 10), 1);
+            viewMode = 'MONTH';
+            updateUrlParams();
+            render();
+          });
+        });
+      };
+
+      const render = () => {
+        if (viewMode === 'MONTH') {
+          renderMonthView();
+        } else {
+          renderYearView();
+        }
+      };
+
+      prevBtn.addEventListener('click', () => {
+        if (viewMode === 'MONTH') currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+        else currentDate = new Date(currentDate.getFullYear() - 1, currentDate.getMonth(), 1);
+        updateUrlParams();
+        render();
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (viewMode === 'MONTH') currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+        else currentDate = new Date(currentDate.getFullYear() + 1, currentDate.getMonth(), 1);
+        updateUrlParams();
+        render();
+      });
+
+      todayBtn.addEventListener('click', () => {
+        currentDate = new Date();
+        updateUrlParams();
+        render();
+      });
+
+      toggleViewBtn.addEventListener('click', () => {
+        viewMode = viewMode === 'MONTH' ? 'YEAR' : 'MONTH';
+        updateUrlParams();
+        render();
+      });
+
+      headerThemeBtn.addEventListener('click', () => {
+        applyTheme(currentTheme === 'light' ? 'dark' : 'light', true);
+      });
+
+      headerSizeBtn.addEventListener('click', () => {
+        const nextSizeMap = { s: 'm', m: 'l', l: 's' };
+        applySize(nextSizeMap[currentSize] || 's', true);
+      });
+
+      window.addEventListener('popstate', () => {
+        syncStateFromUrl();
+        render();
+      });
+
+      syncStateFromUrl();
+      render();
+      logMessage('CB TACTICAL OPERATION TERMINAL initialized.');
+    })();
+  </script>
+</body>
+</html>
